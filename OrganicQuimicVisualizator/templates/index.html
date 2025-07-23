@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador Molecular RDKit + Gestos</title>
+    
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Visualizador</h1>
+            <div class="controls">
+                <button class="btn" onclick="resetViewer()">🔄 Reset</button>
+                <button class="btn" onclick="exportData()">💾 Exportar</button>
+                <button class="btn" onclick="toggleFullscreen()">🖥️ Pantalla Completa</button>
+            </div>
+        </div>
+
+        <!-- Panel de Control -->
+        <div class="control-panel">
+            <div class="section">
+                <h3>Estado de Conexión</h3>
+                <div class="rdkit-info">
+                    <span class="status-indicator" id="connectionStatus"></span>
+                    <span id="connectionText">Conectando...</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Cargar Ligando</h3>
+                <div class="molecule-selector">
+                    <select id="ligandoSelector" onchange="cargarMoleculaPredefinida('ligando')">
+                        <option value="">Seleccionar molécula...</option>
+                        <option value="estradiol">Estradiol</option>
+                        <option value="fulvestrant">Fulvestrant</option>
+                    </select>
+                </div>
+                
+                
+
+                <div id="ligandoProps" class="properties-grid" style="display: none;">
+                    <!-- Propiedades del ligando se llenarán aquí -->
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Cargar Receptor</h3>
+                <div class="molecule-selector">
+                    <select id="receptorSelector" onchange="cargarMoleculaPredefinida('receptor')">
+                        <option value="">Seleccionar molécula...</option>
+                        <option value="estradiol">Estradiol</option>
+                        <option value="fulvestrant">Fulvestrant</option>
+                    </select>
+                </div>
+                
+
+                <div id="receptorProps" class="properties-grid" style="display: none;">
+                    <!-- Propiedades del receptor se llenarán aquí -->
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Controles de Vista</h3>
+                <div class="viewer-controls">
+                    <button class="control-btn" id="btn2D" onclick="cambiarVista('2d')">Vista 2D</button>
+                    <button class="control-btn active" id="btn3D" onclick="cambiarVista('3d')">Vista 3D</button>
+                    <button class="control-btn" onclick="cambiarEstilo('stick')">Stick</button>
+                    <button class="control-btn" onclick="cambiarEstilo('sphere')">Sphere</button>
+                    <button class="control-btn" onclick="cambiarEstilo('line')">Line</button>
+                    <button class="control-btn" onclick="toggleHydrogens()">H atoms</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Central - Visualizador -->
+        <div class="viewer-panel">
+            <div class="viewer-container">
+                <!-- CÁMARA ARRIBA PARA GESTOS -->
+                <div class="camera-view">
+                    <img src="/camara" class="camera-stream" alt="Control por gestos">
+                    <div class="gesture-info" id="gestureInfo">
+                        <div><strong>Modo:</strong> <span id="gestureMode">libre</span></div>
+                        <div><strong>Manos:</strong> <span id="handCount">0</span></div>
+                    </div>
+                </div>
+
+                <!-- MOLÉCULA ABAJO (ÁREA PRINCIPAL) -->
+                <div class="molecule-display" id="moleculeDisplay">
+                    <div class="loading" id="loadingDisplay">
+                        Carga una molécula para comenzar la visualización
+                    </div>
+                    <img id="moleculeImage" class="molecule-image" style="display: none;" alt="Molécula">
+                </div>
+            </div>
+
+            <div class="molecular-info">
+                <h4>Información de Visualización</h4>
+                <p><strong>1 mano cerrada:</strong> Rotar molécula en 3D</p>
+                <p><strong> 2 manos cerradas:</strong> Trasladar molécula</p>
+                <p><strong> 2 manos separadas:</strong> Zoom in/out</p>
+            </div>
+        </div>
+
+        <!-- Panel de Análisis -->
+        <div class="analysis-panel">
+            <div class="section">
+                <h3>Score de Docking</h3>
+                <div class="docking-score">
+                    <div class="score-value" id="dockingScore">0.0</div>
+                    <div class="score-label">Puntuación de Afinidad</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Propiedades Moleculares</h3>
+                <div style="margin-bottom: 15px;">
+                    <h4 style="color: #FF6B6B; margin-bottom: 10px;">Ligando</h4>
+                    <div id="ligandoAnalysis">
+                        <div class="property-item">
+                            <div class="property-value" id="ligandoMW">-</div>
+                            <div>Peso Molecular</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: #4ECDC4; margin-bottom: 10px;">Receptor</h4>
+                    <div id="receptorAnalysis">
+                        <div class="property-item">
+                            <div class="property-value" id="receptorMW">-</div>
+                            <div>Peso Molecular</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Análisis de Interacción</h3>
+                <div class="properties-grid">
+                    <div class="property-item">
+                        <div class="property-value" id="similarity">0%</div>
+                        <div>Similitud</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-value" id="complementarity">0%</div>
+                        <div>Complementariedad</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-value" id="lipophilicity">0.0</div>
+                        <div>LogP Promedio</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-value" id="hbonding">0</div>
+                        <div>H-bonds Potenciales</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Estado del Viewer</h3>
+                <div class="properties-grid">
+                    <div class="property-item">
+                        <div class="property-value" id="rotationX">0°</div>
+                        <div>Rotación X</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-value" id="rotationY">0°</div>
+                        <div>Rotación Y</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-value" id="zoomLevel">1.0x</div>
+                        <div>Zoom</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-value" id="renderStyle">stick</div>
+                        <div>Estilo</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Exportar Datos</h3>
+                <button class="btn" onclick="exportarMolecula('ligando')" style="width: 100%; margin-bottom: 10px;">
+                    📄 Exportar Ligando (SDF)
+                </button>
+                <button class="btn" onclick="exportarMolecula('receptor')" style="width: 100%; margin-bottom: 10px;">
+                    📄 Exportar Receptor (SDF)
+                </button>
+                <button class="btn" onclick="exportarAnalisis()" style="width: 100%;">
+                    📊 Exportar Análisis (JSON)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración Socket.IO
+        const socket = io();
+        
+        // Variables globales
+        let molecularData = {
+            ligando: null,
+            receptor: null,
+            docking_score: 0.0
+        };
+        
+        let viewerState = {
+            modo_vista: '3d',  // CAMBIO: Iniciar en 3D
+            estilo_enlace: 'stick',
+            zoom: 1.0,
+            rotacion: {x: 0, y: 0, z: 0}
+        };
+        
+        let currentMoleculeType = 'ligando'; // ligando o receptor
+        
+        // Eventos Socket.IO
+        socket.on('connect', function() {
+            console.log('✅ Conectado al servidor RDKit');
+            updateConnectionStatus(true);
+        });
+        
+        socket.on('disconnect', function() {
+            console.log('❌ Desconectado del servidor RDKit');
+            updateConnectionStatus(false);
+        });
+        
+        socket.on('molecular_update', function(data) {
+            console.log('🧪 Update molecular:', data);
+            
+            if (data.modelo_estado) {
+                updateGestureInfo(data.modelo_estado);
+                updateViewerState(data.modelo_estado);
+            }
+            
+            if (data.molecular_data) {
+                molecularData = data.molecular_data;
+                updateDockingScore();
+                updateMolecularAnalysis();
+            }
+        });
+        
+        // Funciones de interfaz
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            const textEl = document.getElementById('connectionText');
+            
+            if (connected) {
+                statusEl.className = 'status-indicator status-connected';
+                textEl.textContent = 'RDKit Conectado';
+            } else {
+                statusEl.className = 'status-indicator status-disconnected';
+                textEl.textContent = 'Desconectado';
+            }
+        }
+        
+        function updateGestureInfo(gestureData) {
+            document.getElementById('gestureMode').textContent = gestureData.modo_gesto || 'libre';
+            document.getElementById('handCount').textContent = gestureData.manos_detectadas || 0;
+        }
+        
+        function updateViewerState(stateData) {
+            document.getElementById('rotationX').textContent = `${Math.round(stateData.rotacion?.x || 0)}°`;
+            document.getElementById('rotationY').textContent = `${Math.round(stateData.rotacion?.y || 0)}°`;
+            document.getElementById('zoomLevel').textContent = `${(stateData.escala || 1.0).toFixed(1)}x`;
+            
+            // Actualizar imagen si hay cambios significativos
+            if (currentMoleculeType && hasSignificantChange(stateData)) {
+                actualizarImagenMolecula();
+            }
+        }
+        
+        function hasSignificantChange(newState) {
+            const threshold = 5; // grados o 0.1 para zoom
+            const oldState = viewerState.rotacion;
+            
+            return Math.abs((newState.rotacion?.x || 0) - oldState.x) > threshold ||
+                   Math.abs((newState.rotacion?.y || 0) - oldState.y) > threshold ||
+                   Math.abs((newState.escala || 1.0) - viewerState.zoom) > 0.1;
+        }
+        
+        function updateDockingScore() {
+            const score = molecularData.docking_score || 0.0;
+            document.getElementById('dockingScore').textContent = score.toFixed(1);
+            
+            // Cambiar color según el score
+            const scoreEl = document.getElementById('dockingScore');
+            if (score > 70) {
+                scoreEl.style.color = '#4CAF50'; // Verde
+            } else if (score > 40) {
+                scoreEl.style.color = '#FF9800'; // Naranja
+            } else {
+                scoreEl.style.color = '#f44336'; // Rojo
+            }
+        }
+        
+        function updateMolecularAnalysis() {
+            // Actualizar propiedades del ligando
+            if (molecularData.propiedades_ligando) {
+                const props = molecularData.propiedades_ligando;
+                document.getElementById('ligandoMW').textContent = props.peso_molecular?.toFixed(1) || '-';
+                updateMolecularProperties('ligando', props);
+            }
+            
+            // Actualizar propiedades del receptor
+            if (molecularData.propiedades_receptor) {
+                const props = molecularData.propiedades_receptor;
+                document.getElementById('receptorMW').textContent = props.peso_molecular?.toFixed(1) || '-';
+                updateMolecularProperties('receptor', props);
+            }
+            
+            // Calcular análisis de interacción
+            calculateInteractionAnalysis();
+        }
+        
+        function updateMolecularProperties(tipo, propiedades) {
+            const container = document.getElementById(`${tipo}Props`);
+            if (!container) return;
+            
+            container.style.display = 'grid';
+            container.innerHTML = `
+                <div class="property-item">
+                    <div class="property-value">${propiedades.peso_molecular?.toFixed(1) || '-'}</div>
+                    <div>MW (Da)</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-value">${propiedades.logp?.toFixed(2) || '-'}</div>
+                    <div>LogP</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-value">${propiedades.hbd || '-'}</div>
+                    <div>H-Donors</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-value">${propiedades.hba || '-'}</div>
+                    <div>H-Acceptors</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-value">${propiedades.tpsa?.toFixed(1) || '-'}</div>
+                    <div>TPSA</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-value">${propiedades.rotatable_bonds || '-'}</div>
+                    <div>Rot. Bonds</div>
+                </div>
+            `;
+        }
+        
+        function calculateInteractionAnalysis() {
+            const ligando = molecularData.propiedades_ligando;
+            const receptor = molecularData.propiedades_receptor;
+            
+            if (!ligando || !receptor) return;
+            
+            // Cálculos simplificados de análisis
+            const similarity = Math.min(100, (molecularData.docking_score + 50) * 100 / 150);
+            const complementarity = Math.min(ligando.hbd, receptor.hba) + Math.min(ligando.hba, receptor.hbd);
+            const avgLogP = (ligando.logp + receptor.logp) / 2;
+            const hbondPotential = complementarity;
+            
+            document.getElementById('similarity').textContent = `${similarity.toFixed(0)}%`;
+            document.getElementById('complementarity').textContent = `${(complementarity * 10).toFixed(0)}%`;
+            document.getElementById('lipophilicity').textContent = avgLogP.toFixed(2);
+            document.getElementById('hbonding').textContent = hbondPotential;
+        }
+        
+        // Funciones de control
+        async function cargarMoleculaPredefinida(tipo) {
+            const selectorId = `${tipo}Selector`;
+            const selector = document.getElementById(selectorId);
+            const moleculeName = selector.value;
+            
+            if (!moleculeName) return;
+            
+            try {
+                const response = await fetch('/api/cargar_molecula', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        tipo: tipo,
+                        predefinida: moleculeName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`✅ ${tipo} cargado:`, data.propiedades.nombre);
+                    mostrarImagenMolecula(data.imagen_2d);
+                    currentMoleculeType = tipo;
+                    updateMolecularProperties(tipo, data.propiedades);
+                } else {
+                    console.error('Error cargando molécula:', data.error);
+                    alert('Error cargando molécula: ' + data.error);
+                }
+                
+            } catch (error) {
+                console.error('Error en la petición:', error);
+                alert('Error de conexión al cargar molécula');
+            }
+        }
+        
+        async function cargarMoleculaSmiles(tipo) {
+            const smilesId = `${tipo}Smiles`;
+            const smiles = document.getElementById(smilesId).value.trim();
+            
+            if (!smiles) {
+                alert('Por favor ingresa un SMILES válido');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/cargar_molecula', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        tipo: tipo,
+                        smiles: smiles,
+                        nombre: `${tipo.charAt(0).toUpperCase() + tipo.slice(1)} personalizado`
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`✅ ${tipo} SMILES cargado:`, smiles);
+                    mostrarImagenMolecula(data.imagen_2d);
+                    currentMoleculeType = tipo;
+                    updateMolecularProperties(tipo, data.propiedades);
+                    
+                    // Limpiar el campo de SMILES
+                    document.getElementById(smilesId).value = '';
+                } else {
+                    console.error('Error cargando SMILES:', data.error);
+                    alert('Error cargando SMILES: ' + data.error);
+                }
+                
+            } catch (error) {
+                console.error('Error en la petición SMILES:', error);
+                alert('Error de conexión al cargar SMILES');
+            }
+        }
+        
+        function mostrarImagenMolecula(imagenBase64) {
+            if (!imagenBase64) return;
+            
+            const loadingDisplay = document.getElementById('loadingDisplay');
+            const moleculeImage = document.getElementById('moleculeImage');
+            
+            loadingDisplay.style.display = 'none';
+            moleculeImage.style.display = 'block';
+            moleculeImage.src = imagenBase64;
+        }
+        
+        async function actualizarImagenMolecula() {
+            if (!currentMoleculeType) return;
+            
+            try {
+                const response = await fetch(`/api/generar_imagen?tipo=${currentMoleculeType}&modo=${viewerState.modo_vista}`);
+                const data = await response.json();
+                
+                if (data.success && data.imagen) {
+                    mostrarImagenMolecula(data.imagen);
+                    if (data.viewer_state) {
+                        viewerState = {...viewerState, ...data.viewer_state};
+                    }
+                    document.getElementById('renderStyle').textContent = viewerState.estilo_enlace;
+                }
+                
+            } catch (error) {
+                console.error('Error actualizando imagen:', error);
+            }
+        }
+        
+        async function cambiarVista(modo) {
+            try {
+                // Actualizar estado local
+                viewerState.modo_vista = modo;
+                
+                // Enviar cambio al servidor
+                const response = await fetch('/api/cambiar_modo_vista', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({modo: modo})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Actualizar botones
+                    document.getElementById('btn2D').classList.remove('active');
+                    document.getElementById('btn3D').classList.remove('active');
+                    document.getElementById(`btn${modo.toUpperCase()}`).classList.add('active');
+                    
+                    // Actualizar imagen
+                    await actualizarImagenMolecula();
+                    
+                    console.log(`🎨 Vista cambiada a: ${modo}`);
+                } else {
+                    console.error('Error cambiando vista:', data.error);
+                }
+                
+            } catch (error) {
+                console.error('Error en cambiarVista:', error);
+            }
+        }
+        
+        function cambiarEstilo(estilo) {
+            console.log(`🎨 Cambiando estilo a: ${estilo}`);
+            
+            // Actualizar estado local
+            viewerState.estilo_enlace = estilo;
+            
+            // Enviar cambio via WebSocket
+            socket.emit('cambiar_estilo', {
+                estilo_enlace: estilo
+            });
+            
+            // Actualizar botones visuales
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                if (btn.textContent.toLowerCase().includes(estilo.toLowerCase())) {
+                    btn.classList.add('active');
+                } else if (['stick', 'sphere', 'line'].some(s => btn.textContent.toLowerCase().includes(s))) {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Regenerar imagen inmediatamente
+            socket.emit('regenerar_imagen', {
+                tipo: currentMoleculeType
+            });
+        }
+        
+        function toggleHydrogens() {
+            console.log('🎨 Cambiando visibilidad de hidrógenos');
+            
+            // Cambiar estado
+            viewerState.mostrar_hidrogenos = !viewerState.mostrar_hidrogenos;
+            
+            // Enviar cambio via WebSocket
+            socket.emit('cambiar_estilo', {
+                mostrar_hidrogenos: viewerState.mostrar_hidrogenos
+            });
+            
+            // Actualizar botón visual
+            const btnH = document.querySelector('.control-btn:nth-child(6)'); // Botón H atoms
+            if (viewerState.mostrar_hidrogenos) {
+                btnH.classList.add('active');
+                btnH.textContent = 'H atoms ✓';
+            } else {
+                btnH.classList.remove('active');
+                btnH.textContent = 'H atoms';
+            }
+            
+            // Regenerar imagen inmediatamente
+            socket.emit('regenerar_imagen', {
+                tipo: currentMoleculeType
+            });
+        }
+        
+        async function resetViewer() {
+            try {
+                const response = await fetch('/api/reset_viewer');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reset UI
+                    document.getElementById('loadingDisplay').style.display = 'flex';
+                    document.getElementById('moleculeImage').style.display = 'none';
+                    document.getElementById('ligandoProps').style.display = 'none';
+                    document.getElementById('receptorProps').style.display = 'none';
+                    
+                    // Reset selectors
+                    document.getElementById('ligandoSelector').value = '';
+                    document.getElementById('receptorSelector').value = '';
+                    document.getElementById('ligandoSmiles').value = '';
+                    document.getElementById('receptorSmiles').value = '';
+                    
+                    // Reset análisis
+                    document.getElementById('dockingScore').textContent = '0.0';
+                    document.getElementById('ligandoMW').textContent = '-';
+                    document.getElementById('receptorMW').textContent = '-';
+                    
+                    // Reset botones de vista
+                    document.getElementById('btn2D').classList.remove('active');
+                    document.getElementById('btn3D').classList.add('active'); // 3D por defecto
+                    
+                    // Reset botones de estilo
+                    document.querySelectorAll('.control-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Reset estado viewer
+                    viewerState = {
+                        modo_vista: '3d',
+                        estilo_enlace: 'stick',
+                        zoom: 1.0,
+                        rotacion: {x: 0, y: 0, z: 0},
+                        mostrar_hidrogenos: false
+                    };
+                    
+                    currentMoleculeType = null;
+                    console.log('🔄 Viewer reseteado completamente');
+                } else {
+                    console.error('Error en reset:', data.error);
+                }
+                
+            } catch (error) {
+                console.error('Error reseteando viewer:', error);
+            }
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        async function exportarMolecula(tipo) {
+            try {
+                // En una implementación completa, esto exportaría el SDF
+                const data = molecularData[`propiedades_${tipo}`];
+                if (!data) {
+                    alert(`No hay ${tipo} cargado para exportar`);
+                    return;
+                }
+                
+                const exportData = {
+                    tipo: tipo,
+                    propiedades: data,
+                    timestamp: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                    type: 'application/json'
+                });
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${tipo}_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log(`📄 ${tipo} exportado`);
+                
+            } catch (error) {
+                console.error('Error exportando:', error);
+            }
+        }
+        
+        async function exportarAnalisis() {
+            try {
+                const analysisData = {
+                    docking_score: molecularData.docking_score,
+                    ligando: molecularData.propiedades_ligando,
+                    receptor: molecularData.propiedades_receptor,
+                    viewer_state: viewerState,
+                    interaction_analysis: {
+                        similarity: document.getElementById('similarity').textContent,
+                        complementarity: document.getElementById('complementarity').textContent,
+                        lipophilicity: document.getElementById('lipophilicity').textContent,
+                        hbonding: document.getElementById('hbonding').textContent
+                    },
+                    timestamp: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(analysisData, null, 2)], {
+                    type: 'application/json'
+                });
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `molecular_analysis_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log('📊 Análisis exportado');
+                
+            } catch (error) {
+                console.error('Error exportando análisis:', error);
+            }
+        }
+        
+        function exportData() {
+            exportarAnalisis();
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 RDKit Molecular Viewer iniciado');
+            updateConnectionStatus(false);
+            
+            // Cargar moléculas por defecto para demo
+            setTimeout(() => {
+                document.getElementById('ligandoSelector').value = 'estradiol';
+                cargarMoleculaPredefinida('ligando');
+                
+                setTimeout(() => {
+                    document.getElementById('receptorSelector').value = 'fulvestrant';
+                    cargarMoleculaPredefinida('receptor');
+                }, 1000);
+            }, 2000);
+        });
+        
+        // Funciones de debug globales
+        window.rdkitDebug = {
+            molecularData,
+            viewerState,
+            socket,
+            cargarMolecula: cargarMoleculaPredefinida,
+            cambiarVista,
+            reset: resetViewer
+        };
+        
+        console.log('🔬 RDKit Molecular Viewer JavaScript cargado');
+        console.log('🐛 Debug disponible en: window.rdkitDebug');
+    </script>
+</body>
+</html>
