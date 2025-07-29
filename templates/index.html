@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quimática - Orgánica</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div id="context-menu" class="context-menu">
+            <div id="drag-handle"></div>
+            <h4 id="context-menu-title"></h4>
+            <div id="context-menu-loader">
+                <lord-icon src="https://cdn.lordicon.com/flabvqvs.json" trigger="loop" state="loop-snake-alt" style="width:50px;height:50px;display:block;margin:auto;" colors="primary:#616161"></lord-icon>
+                <p>Obteniendo sugerencias...</p>
+            </div>
+            <div id="context-menu-content"></div>
+            <div id="context-menu-custom-prompt">
+                <p>O introduce tu propia modificación:</p>
+                <textarea id="custom-prompt-input" rows="3" placeholder="Ej: 'Añade un grupo metilo' o 'Conviértelo en un aldehído'"></textarea>
+                <button id="custom-prompt-btn" class="control-btn">Enviar a IA</button>
+            </div>
+            <button id="context-menu-close" class="control-btn-secondary">Cerrar</button>
+        </div>
+        <h1>Quimática - Orgánica</h1>
+        
+        <div id="molecule-bank" class="top-section">
+            <h3>Banco de Moléculas</h3>
+            <p>Haz clic para ver, o arrastra para combinar.</p>
+            <div class="molecule-card-container">
+                <div class="molecule-card" id="card-estradiol" data-molecule-name="estradiol" draggable="true">
+                    <lord-icon src="https://cdn.lordicon.com/flabvqvs.json" trigger="loop" state="loop-snake-alt" style="width:50px;height:50px;" colors="primary:#616161"></lord-icon>
+                </div>
+                <div class="molecule-card" id="card-fulvestrant" data-molecule-name="fulvestrant" draggable="true">
+                    <lord-icon src="https://cdn.lordicon.com/flabvqvs.json" trigger="loop" state="loop-snake-alt" style="width:50px;height:50px;" colors="primary:#616161"></lord-icon>
+                </div>
+            </div>
+        </div>
+
+        <div class="top-section" id="combination-section">
+            <h3>Zona de Combinación</h3>
+            <p>Arrastra las moléculas aquí.</p>
+            <div id="combination-drop-zone">
+                <div id="mol-slot-1" class="mol-slot"><p>Molécula 1</p></div>
+                <div id="mol-slot-2" class="mol-slot"><p>Molécula 2</p></div>
+            </div>
+            <div class="combination-controls">
+                 <select id="model-select">
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                    <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                 </select>
+                 <button id="clear-combination-btn" class="control-btn" disabled>
+                    <lord-icon class="loader-small" src="https://cdn.lordicon.com/flabvqvs.json" trigger="loop" state="loop-snake-alt" style="width:25px;height:25px" colors="primary:#ffffff"></lord-icon>
+                    <span class="btn-text carrusel-text">Limpiar Combinación</span>
+                 </button>
+            </div>
+        </div>
+
+        <div class="viewer-section" id="viewer-container-2d">
+            <h3>Vista 2D: <span id="molecule-name-2d" class="carrusel-text"></span></h3>
+            <div class="controls-2d">
+                <label><input type="checkbox" id="show-atom-indices" checked> Índices de Átomos</label>
+                <label><input type="checkbox" id="show-bond-indices" checked> Índices de Enlaces</label>
+            </div>
+            <div id="viewer-2d"></div>
+            <div class="viewer-loader-overlay" style="display: none;">
+                <!-- El contenido del loader se generará dinámicamente -->
+            </div>
+        </div>
+
+        <div class="viewer-section" id="viewer-container-3d">
+            <h3>Vista 3D Interactiva: <span id="molecule-name-3d" class="carrusel-text"></span></h3>
+            <div class="controls-3d">
+                <span class="control-label">Estilo:</span>
+                <label><input type="radio" name="style3d" value="stick" checked> Palos</label>
+                <label><input type="radio" name="style3d" value="line"> Alambre</label>
+                <label><input type="radio" name="style3d" value="sphere"> Esfera</label>
+                <label><input type="radio" name="style3d" value="ballandstick"> Bolas y Palos</label>
+                <label><input type="checkbox" id="show-hydrogens" checked> Mostrar Hidrógenos</label>
+                <label><input type="checkbox" id="show-atom-indices-3d"> Índices de Átomos</label>
+                <label><input type="checkbox" id="show-bond-indices-3d"> Índices de Enlaces</label>
+                <button id="reset-view-btn" class="control-btn">Reiniciar Vista</button>
+                <div class="download-controls">
+                    <select id="download-format-select">
+                        <option value="stl">STL</option>
+                        <option value="obj">OBJ</option>
+                        <option value="fbx">FBX</option>
+                        <option value="3mf">3MF</option>
+                        <option value="amf">AMF</option>
+                    </select>
+                    <button id="download-btn" class="control-btn">Descargar Modelo 3D</button>
+                </div>
+            </div>
+            <div id="viewer-3d"></div>
+            <div class="viewer-loader-overlay" style="display: none;">
+                <!-- El contenido del loader se generará dinámicamente -->
+            </div>
+        </div>
+
+        <div id="combination-result-section" class="viewer-section">
+            <!-- Contenido generado por JS -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/STLExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/FBXExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/3MFExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/AMFExporter.js"></script>
+    <script src="https://3dmol.csb.pitt.edu/build/3Dmol.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
+</body>
+</html>
