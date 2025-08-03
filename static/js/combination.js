@@ -201,15 +201,21 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
         const jsonString = rawResponse.replace(/```(json)?/g, '').trim();
         const analysisObject = JSON.parse(jsonString);
 
+        const resultSection = document.getElementById('combination-result-section');
+        resultSection.dataset.name = analysisObject.suggestedName;
+        resultSection.dataset.smiles = smiles;
+
         const analysisHtml = `
-            <h4>Nombre Sugerido</h4>
-            <p>${analysisObject.suggestedName}</p>
-            <h4>Características Químicas Clave</h4>
-            <p>${analysisObject.keyChemicalFeatures}</p>
-            <h4>Propiedades Farmacológicas Potenciales</h4>
-            <p>${analysisObject.potentialPharmacologicalProperties}</p>
-            <h4>Posibles Usos o Campos de Investigación</h4>
-            <p>${analysisObject.potentialUses}</p>
+            <h3>Análisis de IA: ${analysisObject.suggestedName}</h3>
+            <div id="ai-analysis-content">
+                <h4>Características Químicas Clave</h4>
+                <p>${analysisObject.keyChemicalFeatures}</p>
+                <h4>Propiedades Farmacológicas Potenciales</h4>
+                <p>${analysisObject.potentialPharmacologicalProperties}</p>
+                <h4>Posibles Usos o Campos de Investigación</h4>
+                <p>${analysisObject.potentialUses}</p>
+            </div>
+            <button id="save-compound-btn" class="control-btn">Guardar Compuesto</button>
         `;
 
         showCombinationResult(analysisHtml);
@@ -244,4 +250,4 @@ export async function handleSuggestionClick(newSmiles) {
     } catch (error) {
         console.error('Error applying suggestion:', error);
     }
-} 
+}
