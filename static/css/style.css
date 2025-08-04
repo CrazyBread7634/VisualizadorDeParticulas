@@ -35,10 +35,10 @@ body {
     z-index: 1000;
     display: none;
     width: 250px;
-    background-color: #ffffff; /* Fondo blanco */
-    border: var(--border-width) solid var(--border-color); /* Borde sutil */
-    border-radius: var(--border-radius); /* Esquinas redondeadas */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+    background-color: #ffffff;
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
     padding: 10px;
     font-size: 14px;
 }
@@ -49,16 +49,16 @@ body {
     padding: 10px;
     margin-top: 8px;
     border: none;
-    background-color: var(--primary-color); /* Azul vibrante */
-    color: #ffffff; /* Texto blanco */
+    background-color: var(--primary-color);
+    color: #ffffff;
     cursor: pointer;
-    border-radius: var(--border-radius); /* Esquinas redondeadas */
+    border-radius: var(--border-radius);
     text-align: left;
     transition: all 0.3s ease;
 }
 
 .context-menu button:hover {
-    background-color: var(--secondary-color); /* Azul más oscuro al pasar el ratón */
+    background-color: var(--secondary-color);
 }
 
 #context-menu-close {
@@ -194,7 +194,7 @@ body {
     border: var(--border-width) dashed var(--border-color);
     border-radius: var(--border-radius);
     display: flex;
-    flex-direction: column; /* Alinea los elementos verticalmente */
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: #fff;
@@ -206,15 +206,15 @@ body {
 
 .mol-slot img {
     max-width: 100%;
-    height: 120px; /* Ajusta la altura de la imagen */
+    height: 120px;
     object-fit: contain;
-    flex-grow: 1; /* Permite que la imagen ocupe el espacio disponible */
+    flex-grow: 1;
 }
 
 .mol-slot p {
-    margin-top: 10px; /* Añade espacio entre la imagen y el texto */
+    margin-top: 10px;
     font-weight: bold;
-    flex-shrink: 0; /* Evita que el texto se encoja */
+    flex-shrink: 0;
 }
 
 .mol-slot.drag-over {
@@ -249,7 +249,7 @@ body {
 .combination-controls .control-btn {
     position: relative;
     transition: all 0.3s ease;
-    min-width: 180px; /* Ancho mínimo para el botón */
+    min-width: 180px;
     background-color: var(--primary-color);
     color: white;
     border: none;
@@ -375,7 +375,7 @@ input[type="radio"]:checked::after {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-left: auto; /* Empuja los controles de descarga a la derecha */
+    margin-left: auto;
 }
 
 select {
@@ -439,7 +439,7 @@ select:focus {
 }
 
 #clear-combination-btn.loading {
-    padding-left: 45px; /* Crear espacio para el loader */
+    padding-left: 45px;
 }
 
 #clear-combination-btn:disabled {
@@ -458,7 +458,7 @@ select:focus {
     left: 15px;
     top: 50%;
     transform: translateY(-50%);
-    display: none; /* Oculto por defecto */
+    display: none;
     width: 25px;
     height: 25px;
 }
@@ -516,7 +516,7 @@ select:focus {
     color: white;
     border: none;
     padding: 12px;
-    border-radius: var(--border-radius); /* Restaurado */
+    border-radius: var(--border-radius);
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
@@ -528,7 +528,7 @@ select:focus {
 
 #context-menu-content button i {
     position: relative;
-    top: 2px; /* Pequeño ajuste para centrar verticalmente el icono */
+    top: 2px;
 }
 
 #context-menu-content button:hover {
@@ -609,7 +609,7 @@ h1 {
 
 #molecule-select {
     padding: 12px 18px;
-    border-radius: 15px; /* Esquinas redondeadas */
+    border-radius: 15px;
     border: 1px solid #dcdcdc;
     font-size: 1em;
     background-color: #f8f9fa;
@@ -717,7 +717,7 @@ h1 {
 
 .controls-2d, .controls-3d {
     padding: 15px;
-    background-color: var(--background-color); /* Fondo azulado claro */
+    background-color: var(--background-color);
     border-bottom: none;
     text-align: center;
     justify-content: center;
@@ -757,7 +757,7 @@ h1 {
 
 .interactive-bond {
     cursor: pointer;
-    stroke-width: 2px; /* Hacer los enlaces un poco más gruesos para que sea más fácil hacer hover */
+    stroke-width: 2px;
 }
 
 .interactive-bond:hover {
@@ -767,7 +767,7 @@ h1 {
 #info-panel {
     padding: 20px;
     border: none;
-    border-radius: 20px; /* Esquinas redondeadas */
+    border-radius: 20px;
     background-color: #f8f9fa;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
@@ -778,28 +778,19 @@ h1 {
     margin-top: 0;
 }
 
-#suggestions button {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border: none;
-    background-color: #28a745; /* Verde para sugerencias */
-    color: white;
-    cursor: pointer;
-    border-radius: var(--border-radius);
-    text-align: left;
-    transition: background-color 0.3s ease;
-}
-
-#suggestions button:hover {
-    background-color: #218838; /* Verde más oscuro */
-}
-
 /* --- Compuestos Guardados --- */
 #saved-compounds-section {
     grid-column: 1 / -1;
     margin-top: 20px;
+}
+
+#saved-compounds-section h3 {
+    text-align: center;
+    font-family: var(--font-family-display);
+    font-weight: 600;
+    font-size: 1.5em;
+    margin-top: 0;
+    color: var(--text-color);
 }
 
 #saved-compounds-container {
@@ -878,20 +869,18 @@ h1 {
     box-shadow: none;
 }
 
-/* Estado vacío para compuestos guardados */
 #saved-compounds-container:empty::after {
-    content: "No hay compuestos guardados aún. ¡Combina moléculas y guarda los resultados!";
+    content: "No hay compuestos guardados aún.";
     grid-column: 1 / -1;
     text-align: center;
-    color: #666;
+    color: var(--text-color);
     font-style: italic;
     padding: 40px 20px;
-    background-color: #f8f9fa;
+    background-color: #f1f1f1;
     border-radius: var(--border-radius);
     border: 2px dashed var(--border-color);
 }
 
-/* Responsive para compuestos guardados */
 @media (max-width: 768px) {
     #saved-compounds-container {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -929,7 +918,7 @@ h1 {
 /* --- Loader General --- */
 .loader {
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #4A90E2; /* Azul del tema */
+    border-top: 4px solid #4A90E2;
     border-radius: 50%;
     width: 30px;
     height: 30px;
