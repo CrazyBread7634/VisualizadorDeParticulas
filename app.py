@@ -6,16 +6,14 @@ import json
 
 app = Flask(__name__)
 
-# --- Base de datos de moléculas iniciales ---
+# base de datos de moleculas iniciales
 molecules_db = {
     "estradiol": "C[C@]12CC[C@@H]3c4ccc(O)cc4CC[C@H]3[C@@H]1CC[C@@H]2O",
     "fulvestrant": "C[C@]12CC[C@@H]3c4ccc(O)cc4CC[C@H]3[C@@H]1CC[C@H](C(F)(F)C(F)(F)S(=O)CCCCCCCCC)C2"
 }
 
 def smiles_to_mol_block(smiles):
-    """Convierte una cadena SMILES a un bloque MOL 3D optimizado."""
     try:
-        # Validación mínima - solo verificar que RDKit pueda parsear
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             print(f"RDKit no puede parsear SMILES: {smiles}")
@@ -24,7 +22,7 @@ def smiles_to_mol_block(smiles):
         num_atoms = mol.GetNumAtoms()
         print(f"📊 Procesando molécula con {num_atoms} átomos (longitud SMILES: {len(smiles)})")
             
-        mol = Chem.AddHs(mol)  # Añadir hidrógenos
+        mol = Chem.AddHs(mol)
         
         embed_result = AllChem.EmbedMolecule(mol, AllChem.ETKDG())
         if embed_result == -1:

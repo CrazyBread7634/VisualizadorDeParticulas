@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-const API_KEY = "AIzaSyAox4uJYUeLZet5YrR7R7BT7q0vmiluI4w"; //Se deja aqui para fines practicos
+const API_KEY = "AIzaSyAox4uJYUeLZet5YrR7R7BT7q0vmiluI4w"; //Se deja aqui para fines practicos, no robar pls, es maloo
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export function getGenerativeModel(modelName) {

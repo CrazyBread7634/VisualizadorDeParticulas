@@ -23,7 +23,6 @@ function extractJson(rawText) {
         try {
             return JSON.parse(markdownMatch[1]);
         } catch (e) {
-            console.warn("No se pudo parsear el JSON del bloque markdown, intentando otro método.", e);
         }
     }
 
@@ -32,7 +31,6 @@ function extractJson(rawText) {
         try {
             return JSON.parse(arrayMatch[0]);
         } catch (e) {
-             console.warn("La cadena que coincide con el regex de array no era un JSON válido.", e);
         }
     }
 
@@ -132,7 +130,6 @@ Responde SÓLO con el array JSON.
         const suggestions = extractJson(rawResponse);
 
         if (!suggestions) {
-            console.error("No se pudo extraer el JSON de la respuesta de la IA:", rawResponse);
             throw new Error("La respuesta de la IA no contenía un JSON válido.");
         }
 
@@ -154,7 +151,6 @@ Responde SÓLO con el array JSON.
         contextMenuContent.style.display = 'flex';
 
     } catch (error) {
-        console.error('Error fetching suggestions:', error);
         let errorMessage = 'Error al obtener sugerencias.';
         if (error.message && error.message.includes('503')) {
             errorMessage = 'El modelo de IA está sobrecargado. Por favor, inténtalo de nuevo en unos momentos.';
@@ -189,7 +185,6 @@ async function handleCustomPrompt() {
         updateButtonState('Modificación Aplicada', false);
 
     } catch (error) {
-        console.error("Error con el prompt personalizado:", error);
         let alertMessage = `Error: ${error.message}`;
         if (error.message && error.message.includes('503')) {
             alertMessage = 'El modelo de IA está sobrecargado. Por favor, inténtalo de nuevo en unos momentos.';
@@ -273,7 +268,6 @@ export function populateMoleculeCards() {
             card.appendChild(nameLabel);
         } else {
             card.innerHTML = `<p>Error</p>`;
-            console.error(`No se encontró la molécula inicial: ${moleculeName}`);
         }
     });
 }

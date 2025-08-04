@@ -9,8 +9,6 @@ async function saveCompound(compoundData) {
         const docRef = await addDoc(collection(db, "compounds"), compoundData);
         return docRef.id;
     } catch (e) {
-        console.error("Error adding document: ", e);
-        throw e;
     }
 }
 
@@ -24,8 +22,6 @@ async function loadCompounds() {
         });
         return compounds;
     } catch (e) {
-        console.error("Error loading compounds: ", e);
-        return [];
     }
 }
 
@@ -35,8 +31,6 @@ async function deleteCompound(compoundId) {
         await deleteDoc(doc(db, "compounds", compoundId));
         return true;
     } catch (e) {
-        console.error("Error deleting document: ", e);
-        throw e;
     }
 }
 

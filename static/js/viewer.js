@@ -108,7 +108,6 @@ export async function loadMolecule(name, smiles = null) {
         return data;
 
     } catch (error) {
-        console.error('Error en loadMolecule:', error);
         throw error;
     }
 }
@@ -133,7 +132,6 @@ export async function rerenderCurrentMolecule() {
         const data = await response.json();
         loadMoleculeFromData(data, currentMoleculeName);
     } catch (error) {
-        console.error('Error al re-renderizar la molécula:', error);
     }
 }
 

@@ -151,16 +151,12 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
 
         
         if (!combinedSmiles || typeof combinedSmiles !== 'string') {
-            console.error("La IA no generó un SMILES válido en el JSON:", rawResponse);
             throw new Error('La IA no generó un SMILES válido.');
         }
         
         if (combinedSmiles.includes(' ')) {
-            console.error("SMILES contiene espacios:", combinedSmiles);
             throw new Error('El SMILES generado contiene espacios.');
         }
-        
-        console.log(`📊 Longitudes: Estradiol(${molSlot1.smiles.length}) + Fulvestrant(${molSlot2.smiles.length}) = Combinado(${combinedSmiles.length})`);
         
         
         updateButtonState('Renderizando...', true);
@@ -175,8 +171,6 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
         scrollToResults();
 
     } catch (error) {
-        console.error('Error durante la combinación de moléculas:', error);
-        
         hideCombinationResult();
         showViewerLoaders("");
         
@@ -190,10 +184,9 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
         updateButtonState(errorMessage, false, false);
         setMoleculeCardsDisabled(false);
         
-        // Mostrar mensaje de error estándar (sin mencionar concatenación)
         showCombinationResult(`
             <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
-                <h4>❌ Error en la Combinación</h4>
+                <h4>Error en la Combinación</h4>
                 <p><strong>No se pudo procesar la molécula generada por la IA.</strong></p>
                 <p>Esto puede ocurrir porque:</p>
                 <ul style="text-align: left; margin: 15px 0;">
@@ -260,7 +253,6 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
         setMoleculeCardsDisabled(false);
 
     } catch (error) {
-        console.error('Error al analizar la molécula combinada:', error);
         showCombinationResult('<p>Ocurrió un error al generar el análisis.</p>');
         let errorMessage = 'Error en Análisis';
         if (error.message && error.message.includes('503')) {
@@ -273,8 +265,6 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
 
 export async function handleSuggestionClick(newSmiles) {
     try {
-        console.log('Intentando procesar SMILES:', newSmiles);
-        
         if (!newSmiles || newSmiles.includes(' ')) {
             throw new Error('SMILES inválido');
         }
@@ -286,22 +276,18 @@ export async function handleSuggestionClick(newSmiles) {
         });
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('Error del servidor al procesar SMILES:', newSmiles, 'Error:', errorData);
             throw new Error(errorData.error || `Server error: ${response.status}`);
         }
         const data = await response.json();
         loadMoleculeFromData(data);
     } catch (error) {
-        console.error('Error applying suggestion:', error);
-        console.error('SMILES problemático:', newSmiles);
-        
         showViewerLoaders("");
         updateButtonState('Error SMILES', false, false);
         setMoleculeCardsDisabled(false);
         
         const resultSection = document.getElementById('combination-result-section');
         resultSection.innerHTML = `
-            <h3>❌ Error al Procesar Molécula</h3>
+            <h3>Error al Procesar Molécula</h3>
             <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px;">
                 <p><strong>No se pudo procesar la molécula generada por la IA.</strong></p>
                 <details style="margin-top: 15px;">
@@ -313,9 +299,9 @@ export async function handleSuggestionClick(newSmiles) {
                     </div>
                 </details>
                 <div style="margin-top: 15px; padding: 10px; background-color: #e3f2fd; border-left: 4px solid #2196f3;">
-                    <strong>💡 Sugerencias:</strong>
+                    <strong>Sugerencias:</strong>
                     <ul style="margin: 5px 0; padding-left: 20px;">
-                        <li>Prueba con un modelo de IA diferente (ej. GPT-4 en lugar de Gemini)</li>
+                        <li>Prueba con un modelo de IA diferente.</li>
                         <li>Combina moléculas más simples</li>
                         <li>Intenta la combinación nuevamente</li>
                     </ul>

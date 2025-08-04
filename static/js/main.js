@@ -21,7 +21,6 @@ let compoundToDelete = null;
 function handleDownload() {
     const viewer = getViewer();
     if (!viewer || !viewer.getModel()) {
-        console.error("3D viewer or model not initialized.");
         return;
     }
     const format = document.getElementById('download-format-select').value;
@@ -98,7 +97,6 @@ async function handleDeleteCompound() {
         renderSavedCompounds();
         
     } catch (error) {
-        console.error('Error al eliminar compuesto:', error);
         alert('Error al eliminar el compuesto. Por favor, intenta de nuevo.');
         confirmButton.disabled = false;
         confirmButton.innerHTML = originalText;
