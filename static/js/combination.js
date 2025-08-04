@@ -131,6 +131,9 @@ Instrucciones:
 2. Forma un enlace covalente químicamente viable y estable entre ellas (p. ej., éster, éter, amida).
 3. La nueva molécula debe preservar o mejorar la afinidad por los receptores de estrógeno y tener propiedades farmacocinéticas razonables.
 4. El resultado final debe ser una molécula estructuralmente plausible y sintéticamente accesible.
+5. Por ninguna razon debes añadir texto adicional a la respuesta. Ni comenzar con texto, ni finalizar con texto.
+6. No añadas comentarios adicionales a la respuesta.
+7. Genera unicamente la cadena SMILES de la molécula combinada.
 
 Genera una respuesta en formato JSON con la siguiente estructura:
 {
@@ -147,10 +150,22 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
         const responseObject = JSON.parse(jsonString);
         const combinedSmiles = responseObject.combinedSmiles;
 
-        // Una verificación final simple: un SMILES válido no debería tener espacios.
-        if (!combinedSmiles || combinedSmiles.includes(' ')) {
-             console.error("La IA no generó un SMILES válido en el JSON:", rawResponse);
-             throw new Error('La IA no generó un SMILES válido.');
+        // Validaciones múltiples del SMILES generado
+        if (!combinedSmiles || typeof combinedSmiles !== 'string') {
+            console.error("La IA no generó un SMILES válido en el JSON:", rawResponse);
+            throw new Error('La IA no generó un SMILES válido.');
+        }
+        
+        if (combinedSmiles.includes(' ') || combinedSmiles.length > 300) {
+            console.error("SMILES inválido o demasiado largo:", combinedSmiles);
+            throw new Error('El SMILES generado es inválido o demasiado complejo.');
+        }
+        
+        // Verificar que no sea una simple concatenación de las moléculas originales
+        if (combinedSmiles === molSlot1.smiles + molSlot2.smiles || 
+            combinedSmiles === molSlot2.smiles + molSlot1.smiles) {
+            console.error("La IA concatenó las moléculas en lugar de combinarlas:", combinedSmiles);
+            throw new Error('La IA no realizó una combinación química válida.');
         }
         
         updateButtonState('Renderizando...', true);
@@ -161,15 +176,39 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
 
     } catch (error) {
         console.error('Error durante la combinación de moléculas:', error);
+        
+        // Limpiar completamente la UI
+        hideCombinationResult();
+        showViewerLoaders(""); // Limpiar loaders de visualización
+        
         let errorMessage = 'Error de Combinación';
         if (error.message && error.message.includes('503')) {
             errorMessage = 'IA Sobrecargada';
+        } else if (error.message && error.message.includes('no es válido')) {
+            errorMessage = 'SMILES Inválido';
         }
+        
         updateButtonState(errorMessage, false, false);
         setMoleculeCardsDisabled(false); // Rehabilitar tarjetas en caso de error
+        
+        // Mostrar mensaje de error más detallado
+        showCombinationResult(`
+            <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
+                <h4>❌ Error en la Combinación</h4>
+                <p><strong>La IA generó una molécula demasiado compleja o químicamente imposible.</strong></p>
+                <p>Esto puede ocurrir porque:</p>
+                <ul style="text-align: left; margin: 15px 0;">
+                    <li>El modelo de IA concatenó las moléculas en lugar de combinarlas químicamente</li>
+                    <li>La estructura resultante es demasiado grande para procesar</li>
+                    <li>La molécula generada no es químicamente estable</li>
+                </ul>
+                <p><em>Consejo: Intenta usar un modelo de IA diferente.</em></p>
+            </div>
+        `);
+        
         setTimeout(() => {
             updateButtonState('Limpiar Combinación', false, false);
-        }, 3000); // Dar más tiempo para leer el error
+        }, 5000); // Dar más tiempo para leer el error detallado
     }
 }
 
@@ -206,7 +245,7 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
         resultSection.dataset.smiles = smiles;
 
         const analysisHtml = `
-            <h3>Análisis de IA: ${analysisObject.suggestedName}</h3>
+            <h3>${analysisObject.suggestedName}</h3>
             <div id="ai-analysis-content">
                 <h4>Características Químicas Clave</h4>
                 <p>${analysisObject.keyChemicalFeatures}</p>
@@ -236,6 +275,13 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
 
 export async function handleSuggestionClick(newSmiles) {
     try {
+        console.log('Intentando procesar SMILES:', newSmiles);
+        
+        // Validación básica del SMILES antes de enviarlo al servidor
+        if (!newSmiles || newSmiles.length > 500 || newSmiles.includes(' ')) {
+            throw new Error('SMILES inválido o demasiado complejo');
+        }
+        
         const response = await fetch('/api/render_smiles', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -243,11 +289,51 @@ export async function handleSuggestionClick(newSmiles) {
         });
         if (!response.ok) {
             const errorData = await response.json();
+            console.error('Error del servidor al procesar SMILES:', newSmiles, 'Error:', errorData);
             throw new Error(errorData.error || `Server error: ${response.status}`);
         }
         const data = await response.json();
         loadMoleculeFromData(data);
     } catch (error) {
         console.error('Error applying suggestion:', error);
+        console.error('SMILES problemático:', newSmiles);
+        
+        // Limpiar loaders
+        showViewerLoaders("");
+        updateButtonState('Error SMILES', false, false);
+        setMoleculeCardsDisabled(false);
+        
+        // Mostrar un mensaje de error más amigable al usuario
+        const resultSection = document.getElementById('combination-result-section');
+        resultSection.innerHTML = `
+            <h3>❌ Error al Procesar Molécula</h3>
+            <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px;">
+                <p><strong>No se pudo procesar la molécula generada por la IA.</strong></p>
+                <details style="margin-top: 15px;">
+                    <summary style="cursor: pointer; font-weight: bold;">Ver detalles técnicos</summary>
+                    <div style="background-color: #f5f5f5; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>SMILES problemático:</strong> <code style="word-break: break-all;">${newSmiles}</code></p>
+                        <p><strong>Longitud:</strong> ${newSmiles ? newSmiles.length : 0} caracteres</p>
+                    </div>
+                </details>
+                <div style="margin-top: 15px; padding: 10px; background-color: #e3f2fd; border-left: 4px solid #2196f3;">
+                    <strong>💡 Sugerencias:</strong>
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        <li>Prueba con un modelo de IA diferente (ej. GPT-4 en lugar de Gemini)</li>
+                        <li>Combina moléculas más simples</li>
+                        <li>Intenta la combinación nuevamente</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        resultSection.style.display = 'block';
+        resultSection.classList.add('visible');
+        
+        setTimeout(() => {
+            updateButtonState('Limpiar Combinación', false, false);
+        }, 3000);
+        
+        throw error; // Re-lanzar para que el error se propague correctamente
     }
 }

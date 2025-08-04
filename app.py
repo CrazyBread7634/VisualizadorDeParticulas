@@ -15,16 +15,42 @@ molecules_db = {
 def smiles_to_mol_block(smiles):
     """Convierte una cadena SMILES a un bloque MOL 3D optimizado."""
     try:
+        # Validaciones iniciales
+        if len(smiles) > 500:  # SMILES demasiado largo
+            print(f"SMILES demasiado complejo (longitud: {len(smiles)})")
+            return None
+            
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return None
+            
+        # Verificar si la molécula es demasiado grande
+        num_atoms = mol.GetNumAtoms()
+        if num_atoms > 150:  # Límite razonable de átomos
+            print(f"Molécula demasiado grande ({num_atoms} átomos)")
+            return None
+            
         mol = Chem.AddHs(mol)  # Añadir hidrógenos
-        AllChem.EmbedMolecule(mol, AllChem.ETKDG())  # Generar conformación 3D
-        AllChem.MMFFOptimizeMolecule(mol)  # Optimizar con campo de fuerza MMFF94
+        
+        # Intentar generar conformación 3D con múltiples intentos
+        embed_result = AllChem.EmbedMolecule(mol, AllChem.ETKDG())
+        if embed_result == -1:
+            # Si falla, intentar sin restricciones estéreo
+            embed_result = AllChem.EmbedMolecule(mol, randomSeed=42)
+            if embed_result == -1:
+                print("No se pudo generar conformación 3D")
+                return None
+        
+        # Optimizar con campo de fuerza MMFF94
+        try:
+            AllChem.MMFFOptimizeMolecule(mol)
+        except:
+            print("Advertencia: No se pudo optimizar con MMFF94, usando geometría sin optimizar")
+            
         mol_block = Chem.MolToMolBlock(mol)
         return mol_block
     except Exception as e:
-        print(f"Error al procesar SMILES: {e}")
+        print(f"Error al procesar SMILES '{smiles}': {e}")
         return None
 
 def smiles_to_svg(smiles, show_atom_indices=True, show_bond_indices=True):
@@ -92,13 +118,34 @@ def render_smiles():
     if not smiles:
         return jsonify({"error": "No se proporcionó SMILES"}), 400
 
+    print(f"Procesando SMILES: {smiles}")  # Log para debugging
+    
     mol_block = smiles_to_mol_block(smiles)
     svg_image, bonds_data = smiles_to_svg(smiles, show_atom_indices=show_atoms, show_bond_indices=show_bonds)
 
     if mol_block and svg_image:
         return jsonify({"mol": mol_block, "smiles": smiles, "svg": svg_image, "bonds": bonds_data})
     else:
-        return jsonify({"error": "El SMILES proporcionado no es válido o no se pudo generar la estructura 3D."}), 422
+        error_details = []
+        if not mol_block:
+            error_details.append("No se pudo generar la estructura 3D")
+        if not svg_image:
+            error_details.append("No se pudo generar la representación 2D")
+        
+        detailed_error = f"Error procesando SMILES '{smiles}': {', '.join(error_details)}"
+        print(f"Error detallado: {detailed_error}")  # Log para debugging
+        
+        return jsonify({
+            "error": "El SMILES proporcionado no es válido o no se pudo generar la estructura.",
+            "details": detailed_error,
+            "smiles": smiles,
+            "suggestions": [
+                "Verifica que el SMILES no contenga caracteres inválidos",
+                "La molécula puede ser demasiado compleja para procesar",
+                "Intenta con una estructura más simple",
+                "Usa un modelo de IA diferente para generar el SMILES"
+            ]
+        }), 422
 
 if __name__ == '__main__':
     app.run(debug=True)

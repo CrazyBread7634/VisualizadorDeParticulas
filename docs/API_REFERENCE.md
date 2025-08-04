@@ -153,7 +153,15 @@ curl "http://localhost:5000/api/molecule/fulvestrant?show_atoms=false&show_bonds
 **Respuesta de Error (422)**:
 ```json
 {
-  "error": "El SMILES proporcionado no es válido o no se pudo generar la estructura 3D."
+  "error": "El SMILES proporcionado no es válido o no se pudo generar la estructura.",
+  "details": "Error procesando SMILES 'CC(C)(C)c1ccc...': No se pudo generar la estructura 3D",
+  "smiles": "CC(C)(C)c1ccc...",
+  "suggestions": [
+    "Verifica que el SMILES no contenga caracteres inválidos",
+    "La molécula puede ser demasiado compleja para procesar",
+    "Intenta con una estructura más simple",
+    "Usa un modelo de IA diferente para generar el SMILES"
+  ]
 }
 ```
 
@@ -186,6 +194,39 @@ curl -X POST http://localhost:5000/api/render_smiles \
 
 ---
 
+## Sistema de Base de Datos (Firebase)
+
+### Configuración Firebase
+
+La aplicación utiliza Firebase Firestore para persistir compuestos generados por los usuarios.
+
+**Colección**: `compounds`
+
+**Estructura de Documento**:
+```json
+{
+  "name": "string",           // Nombre del compuesto generado por IA
+  "smiles": "string",         // Notación SMILES del compuesto
+  "analysis": "string",       // Análisis HTML generado por IA
+  "createdAt": "timestamp"    // Fecha de creación
+}
+```
+
+**Configuración de Conexión**:
+```javascript
+// firebase/config.js
+const firebaseConfig = {
+  apiKey: "AIzaSyCRe2_VUO15WSJP96MN12U8lIwAR0MT3Xg",
+  authDomain: "quimatica-organica.firebaseapp.com",
+  projectId: "quimatica-organica",
+  storageBucket: "quimatica-organica.appspot.com",
+  messagingSenderId: "970910114042",
+  appId: "1:970910114042:web:1bab42f8c1b99ea54f6943"
+};
+```
+
+---
+
 ## Funciones Backend (Python)
 
 ### 1. smiles_to_mol_block()
@@ -194,7 +235,7 @@ curl -X POST http://localhost:5000/api/render_smiles \
 def smiles_to_mol_block(smiles: str) -> str | None
 ```
 
-**Descripción**: Convierte una cadena SMILES a un bloque MOL 3D optimizado usando RDKit.
+**Descripción**: Convierte una cadena SMILES a un bloque MOL 3D optimizado usando RDKit con validaciones mejoradas.
 
 **Parámetros**:
 - `smiles` (str): Notación SMILES válida de la molécula
@@ -202,16 +243,25 @@ def smiles_to_mol_block(smiles: str) -> str | None
 **Retorna**:
 - `str`: Bloque MOL 3D en formato texto, o `None` si hay error
 
-**Proceso**:
-1. Parsea SMILES con RDKit
-2. Añade hidrógenos explícitos
-3. Genera conformación 3D con ETKDG
-4. Optimiza con campo de fuerza MMFF94
-5. Convierte a formato MOL
+**Validaciones**:
+- **Longitud máxima**: 500 caracteres
+- **Número de átomos**: Máximo 150 átomos
+- **Validez química**: Estructura parseable por RDKit
 
-**Manejo de Errores**:
-- Captura excepciones y retorna `None`
-- Imprime errores en consola para debugging
+**Proceso**:
+1. Validaciones iniciales de longitud y complejidad
+2. Parsea SMILES con RDKit
+3. Verifica número de átomos < 150
+4. Añade hidrógenos explícitos
+5. Genera conformación 3D con ETKDG (con fallback)
+6. Optimiza con campo de fuerza MMFF94 (opcional)
+7. Convierte a formato MOL
+
+**Manejo de Errores Mejorado**:
+- Múltiples intentos de generación 3D
+- Fallback sin restricciones estéreo
+- Logging detallado para debugging
+- Optimización opcional con MMFF94
 
 **Ejemplo**:
 ```python
@@ -274,6 +324,81 @@ svg, bonds = smiles_to_svg("c1ccccc1", False, False)
 # Procesar información de enlaces
 for bond in bonds:
     print(f"Enlace {bond['bond_index']}: átomo {bond['atom1_index']} - átomo {bond['atom2_index']}")
+```
+
+---
+
+## APIs Firebase (JavaScript)
+
+### Módulo: firebase/db.js
+
+#### 1. saveCompound()
+
+```javascript
+async function saveCompound(compoundData: object): Promise<string | null>
+```
+
+**Descripción**: Guarda un compuesto generado en la base de datos Firebase Firestore.
+
+**Parámetros**:
+- `compoundData` (object): Datos del compuesto a guardar
+  - `name` (string): Nombre del compuesto
+  - `smiles` (string): Notación SMILES
+  - `analysis` (string): Análisis HTML generado por IA
+  - `createdAt` (Date): Fecha de creación
+
+**Retorna**:
+- `string`: ID del documento creado, o `null` si hay error
+
+**Ejemplo**:
+```javascript
+import { saveCompound } from './firebase/db.js';
+
+const compoundData = {
+    name: "2-metil-benzofurano derivado",
+    smiles: "CC1=CC2=C(C=C1)OC=C2",
+    analysis: "<h4>Análisis...</h4>",
+    createdAt: new Date()
+};
+
+const docId = await saveCompound(compoundData);
+if (docId) {
+    console.log('Compuesto guardado con ID:', docId);
+}
+```
+
+#### 2. loadCompounds()
+
+```javascript
+async function loadCompounds(): Promise<array>
+```
+
+**Descripción**: Carga todos los compuestos guardados desde Firebase Firestore.
+
+**Retorna**:
+- `array`: Lista de compuestos con sus IDs y datos
+
+**Estructura de Respuesta**:
+```javascript
+[
+    {
+        id: "doc_id_123",
+        name: "Compuesto XYZ",
+        smiles: "CC1=CC=CC=C1",
+        analysis: "<h4>Análisis...</h4>",
+        createdAt: Timestamp
+    }
+]
+```
+
+**Ejemplo**:
+```javascript
+import { loadCompounds } from './firebase/db.js';
+
+const compounds = await loadCompounds();
+compounds.forEach(compound => {
+    console.log(`${compound.name}: ${compound.smiles}`);
+});
 ```
 
 ---
@@ -653,7 +778,7 @@ function clearCombination(selectedMolecule: string): void
 async function handleSuggestionClick(suggestion: object): Promise<void>
 ```
 
-**Descripción**: Maneja clics en sugerencias de modificación molecular del menú contextual.
+**Descripción**: Maneja clics en sugerencias de modificación molecular del menú contextual con validaciones mejoradas.
 
 **Parámetros**:
 - `suggestion` (object): Objeto con datos de la sugerencia
@@ -661,11 +786,23 @@ async function handleSuggestionClick(suggestion: object): Promise<void>
   - `description` (string): Descripción detallada
   - `smiles` (string, opcional): SMILES modificado
 
+**Validaciones Mejoradas**:
+- **Longitud SMILES**: Máximo 500 caracteres
+- **Formato**: No espacios en el SMILES
+- **Complejidad**: Validación antes de envío al servidor
+
 **Proceso**:
 1. Valida estructura de la sugerencia
-2. Si tiene SMILES, lo renderiza directamente
-3. Si no, usa IA para generar modificación
-4. Actualiza visualización con resultado
+2. Validación básica del SMILES (longitud, formato)
+3. Si tiene SMILES válido, lo renderiza directamente
+4. Si no, usa IA para generar modificación
+5. Actualiza visualización con resultado
+6. Manejo detallado de errores con sugerencias al usuario
+
+**Manejo de Errores**:
+- Mensajes de error detallados para el usuario
+- Información técnica expandible
+- Sugerencias específicas para resolver problemas
 
 ---
 
@@ -702,6 +839,36 @@ interface Suggestion {
 }
 ```
 
+### CompoundData
+
+```typescript
+interface CompoundData {
+  name: string;           // Nombre del compuesto generado por IA
+  smiles: string;         // Notación SMILES del compuesto
+  analysis: string;       // Análisis HTML generado por IA
+  createdAt: Date;        // Fecha de creación
+}
+```
+
+### SavedCompound
+
+```typescript
+interface SavedCompound extends CompoundData {
+  id: string;            // ID del documento en Firebase
+}
+```
+
+### ErrorResponse
+
+```typescript
+interface ErrorResponse {
+  error: string;          // Mensaje de error principal
+  details?: string;       // Detalles técnicos del error
+  smiles?: string;        // SMILES problemático (si aplica)
+  suggestions?: string[]; // Sugerencias para resolver el error
+}
+```
+
 ---
 
 ## Códigos de Estado HTTP
@@ -719,9 +886,11 @@ interface Suggestion {
 ## Límites y Restricciones
 
 ### Backend
-- **Longitud SMILES**: Máximo 1000 caracteres (recomendado)
+- **Longitud SMILES**: Máximo 500 caracteres (validación estricta)
+- **Número de Átomos**: Máximo 150 átomos por molécula
 - **Timeout**: 30 segundos para procesamiento 3D
 - **Memoria**: Limitado por disponibilidad del sistema
+- **Validaciones SMILES**: No espacios, caracteres válidos únicamente
 
 ### Frontend
 - **Modelos IA**: Sujeto a cuotas de Google AI

@@ -213,6 +213,27 @@ const models = [
 | Procesando | "Combinando..." | true | true | N/A |
 | Completado | "Limpiar Combinación" | false | false | `clearCombination()` |
 
+#### Funcionalidad de Guardado
+
+Cuando se completa exitosamente una combinación, aparece un botón adicional para guardar el compuesto generado:
+
+```html
+<button id="save-compound-btn" class="control-btn">Guardar Compuesto</button>
+```
+
+**Estados del Botón de Guardado**:
+- **Inicial**: "Guardar Compuesto" (habilitado)
+- **Procesando**: "Guardando..." (deshabilitado)
+- **Completado**: "Guardado" (deshabilitado)
+- **Error**: "Guardar Compuesto" (rehabilitado)
+
+**Proceso de Guardado**:
+1. Extrae datos del análisis de combinación
+2. Crea objeto CompoundData con metadatos
+3. Envía a Firebase Firestore usando `saveCompound()`
+4. Actualiza lista de compuestos guardados
+5. Muestra confirmación al usuario
+
 ---
 
 ### 3. Visor 2D (`#viewer-container-2d`)
@@ -485,7 +506,165 @@ function toggle3DLabels() {
 
 ---
 
-### 5. Menú Contextual (`#context-menu`)
+### 5. Sección de Compuestos Guardados (`#saved-compounds-section`)
+
+#### Descripción
+Sección que permite visualizar y cargar compuestos generados previamente y guardados en Firebase Firestore.
+
+#### Estructura HTML
+```html
+<div id="saved-compounds-section" class="top-section">
+    <h3>Compuestos Guardados</h3>
+    <div id="saved-compounds-container" class="molecule-card-container">
+        <!-- Los compuestos guardados se cargarán aquí -->
+    </div>
+</div>
+```
+
+#### Propiedades CSS
+```css
+.saved-compound-card {
+    width: 160px;
+    height: 100px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    margin: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.saved-compound-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.saved-compound-card p {
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin: 5px 0;
+    line-height: 1.2;
+}
+
+.load-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.load-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+```
+
+#### Funcionalidades
+
+##### Carga de Compuestos
+```javascript
+async function renderSavedCompounds() {
+    const container = document.getElementById('saved-compounds-container');
+    container.innerHTML = 'Cargando...';
+    
+    const compounds = await loadCompounds();
+    container.innerHTML = '';
+    
+    if (compounds.length === 0) {
+        container.innerHTML = '<p>No hay compuestos guardados.</p>';
+        return;
+    }
+    
+    compounds.forEach(compound => createCompoundCard(compound));
+}
+```
+
+##### Creación de Tarjetas
+```javascript
+function createCompoundCard(compound) {
+    const card = document.createElement('div');
+    card.className = 'molecule-card saved-compound-card';
+    card.innerHTML = `
+        <p>${compound.name}</p>
+        <button class="control-btn load-btn">Cargar</button>
+    `;
+    
+    // Event listener para cargar compuesto
+    card.querySelector('.load-btn').addEventListener('click', () => {
+        loadSavedCompound(compound);
+    });
+    
+    return card;
+}
+```
+
+##### Carga de Compuesto Individual
+```javascript
+function loadSavedCompound(compound) {
+    // Cargar molécula en visores
+    loadMolecule(compound.name, compound.smiles);
+    
+    // Mostrar análisis guardado
+    const resultSection = document.getElementById('combination-result-section');
+    resultSection.innerHTML = `
+        <h3>Análisis del Compuesto Guardado: ${compound.name}</h3>
+        <div id="ai-analysis-content">${compound.analysis}</div>
+    `;
+    resultSection.style.display = 'block';
+    resultSection.classList.add('visible');
+}
+```
+
+#### Estados Visuales
+
+| Estado | Clase CSS | Descripción |
+|--------|-----------|-------------|
+| Normal | `.saved-compound-card` | Estado por defecto |
+| Hover | `.saved-compound-card:hover` | Al pasar el mouse |
+| Cargando | `.loading` | Durante carga de Firebase |
+| Vacío | `.empty-state` | Cuando no hay compuestos |
+
+#### Integración Firebase
+
+##### Dependencias
+```html
+<!-- Firebase SDK -->
+<script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js"
+        }
+    }
+</script>
+```
+
+##### Configuración de Base de Datos
+```javascript
+// firebase/config.js
+const firebaseConfig = {
+    apiKey: "AIzaSyCRe2_VUO15WSJP96MN12U8lIwAR0MT3Xg",
+    authDomain: "quimatica-organica.firebaseapp.com",
+    projectId: "quimatica-organica",
+    storageBucket: "quimatica-organica.appspot.com",
+    messagingSenderId: "970910114042",
+    appId: "1:970910114042:web:1bab42f8c1b99ea54f6943"
+};
+```
+
+---
+
+### 6. Menú Contextual (`#context-menu`)
 
 #### Descripción
 Menú emergente inteligente que proporciona sugerencias de modificaciones moleculares basadas en IA.
@@ -623,7 +802,7 @@ function makeDraggable(element) {
 
 ---
 
-### 6. Sistema de Carga (`loader-overlay`)
+### 7. Sistema de Carga (`loader-overlay`)
 
 #### Descripción
 Sistema unificado de indicadores de carga para todas las operaciones asíncronas.
@@ -750,7 +929,7 @@ graph TD
     E --> F[Actualizar etiquetas]
 ```
 
-### 2. Flujo de Combinación
+### 2. Flujo de Combinación con Guardado
 
 ```mermaid
 graph TD
@@ -764,9 +943,31 @@ graph TD
     H --> I[Generar prompt IA]
     I --> J[Procesar respuesta]
     J --> K[Renderizar resultado]
+    K --> L[Mostrar botón guardar]
+    L --> M{Usuario quiere guardar?}
+    M -->|Sí| N[handleSaveCompound]
+    M -->|No| O[Continuar sin guardar]
+    N --> P[Guardar en Firebase]
+    P --> Q[Actualizar lista guardados]
+    Q --> R[Confirmar guardado]
 ```
 
-### 3. Flujo de Sugerencias IA
+### 3. Flujo de Carga de Compuestos Guardados
+
+```mermaid
+graph TD
+    A[Inicializar aplicación] --> B[renderSavedCompounds]
+    B --> C[loadCompounds desde Firebase]
+    C --> D{Hay compuestos?}
+    D -->|Sí| E[Crear tarjetas de compuestos]
+    D -->|No| F[Mostrar mensaje vacío]
+    E --> G[Usuario clica Cargar]
+    G --> H[loadSavedCompound]
+    H --> I[Cargar en visores 2D/3D]
+    I --> J[Mostrar análsis guardado]
+```
+
+### 4. Flujo de Sugerencias IA
 
 ```mermaid
 graph TD
@@ -791,7 +992,10 @@ const MoleculeEvents = {
     LOADED: 'molecule:loaded',
     CHANGED: 'molecule:changed',
     COMBINED: 'molecules:combined',
-    SUGGESTION_APPLIED: 'suggestion:applied'
+    SUGGESTION_APPLIED: 'suggestion:applied',
+    COMPOUND_SAVED: 'compound:saved',
+    COMPOUND_LOADED: 'compound:loaded',
+    FIREBASE_ERROR: 'firebase:error'
 };
 
 // Emisión de eventos
@@ -802,10 +1006,22 @@ function emitMoleculeLoaded(moleculeData) {
     document.dispatchEvent(event);
 }
 
+function emitCompoundSaved(compoundData) {
+    const event = new CustomEvent(MoleculeEvents.COMPOUND_SAVED, {
+        detail: compoundData
+    });
+    document.dispatchEvent(event);
+}
+
 // Escucha de eventos
 document.addEventListener(MoleculeEvents.LOADED, (event) => {
     console.log('Molécula cargada:', event.detail);
     updateAnalytics(event.detail);
+});
+
+document.addEventListener(MoleculeEvents.COMPOUND_SAVED, (event) => {
+    console.log('Compuesto guardado:', event.detail);
+    renderSavedCompounds(); // Actualizar lista
 });
 ```
 
@@ -817,8 +1033,24 @@ document.addEventListener('click', (event) => {
     const target = event.target;
     
     // Manejo de tarjetas de moléculas
-    if (target.closest('.molecule-card')) {
+    if (target.closest('.molecule-card') && !target.closest('.saved-compound-card')) {
         handleMoleculeCardClick(target.closest('.molecule-card'));
+    }
+    
+    // Manejo de compuestos guardados
+    if (target.closest('.saved-compound-card')) {
+        handleSavedCompoundClick(target.closest('.saved-compound-card'));
+    }
+    
+    // Manejo del botón guardar compuesto
+    if (target.id === 'save-compound-btn') {
+        handleSaveCompound();
+    }
+    
+    // Manejo de botones de carga en compuestos guardados
+    if (target.classList.contains('load-btn')) {
+        const compoundData = target.closest('.saved-compound-card').dataset;
+        loadSavedCompound(compoundData);
     }
     
     // Manejo de sugerencias

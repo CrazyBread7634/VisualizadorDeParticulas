@@ -140,6 +140,58 @@ La aplicación está dividida en cuatro secciones principales:
 
 ---
 
+### Guardado y Gestión de Compuestos
+
+#### Descripción General
+La aplicación permite guardar compuestos generados mediante combinaciones de IA para uso posterior. Los compuestos se almacenan en Firebase Firestore y pueden ser recuperados en cualquier momento.
+
+#### Guardando un Compuesto
+
+##### Paso 1: Generar un Compuesto
+1. Realiza una **Combinación de Moléculas** exitosa (ver sección anterior)
+2. Espera a que aparezca el análisis completo del compuesto
+3. Verifica que el resultado sea satisfactorio
+
+##### Paso 2: Guardar el Compuesto
+1. Al final del análisis, aparecerá un botón **"Guardar Compuesto"**
+2. Haz clic en el botón
+3. El sistema mostrará "Guardando..." mientras procesa
+4. Una vez guardado, aparecerá la confirmación "Compuesto guardado con éxito!"
+5. El botón cambiará a "Guardado" para indicar el estado
+
+##### ¿Qué se Guarda?
+- **Nombre**: Generado automáticamente por la IA
+- **SMILES**: Notación química de la molécula
+- **Análisis completo**: Propiedades farmacológicas y características
+- **Fecha de creación**: Timestamp automático
+
+#### Cargando Compuestos Guardados
+
+##### Visualizar Compuestos Disponibles
+1. En la sección **"Compuestos Guardados"** (parte inferior de la página)
+2. Verás tarjetas verdes con los nombres de tus compuestos
+3. Si no tienes compuestos guardados, aparecerá "No hay compuestos guardados"
+
+##### Cargar un Compuesto Específico
+1. Busca el compuesto deseado en las tarjetas verdes
+2. Haz clic en el botón **"Cargar"** de la tarjeta
+3. El compuesto se cargará automáticamente en ambos visores (2D y 3D)
+4. Aparecerá el análisis guardado en la sección de resultados
+
+### Ejemplo Práctico: Flujo Completo de Guardado
+
+```
+1. Combina "Estradiol" + "Fulvestrant" usando Gemini 1.5 Pro
+2. Espera el análisis completo (2-3 minutos)
+3. Revisa el nombre generado, ej: "17β-Estradiol-7α-pentafluorobutilsulfinildecanoato"
+4. Haz clic en "Guardar Compuesto"
+5. Confirma que aparezca "Guardado"
+6. Desplázate hacia abajo para ver tu compuesto en "Compuestos Guardados"
+7. Prueba cargar el compuesto haciendo clic en "Cargar"
+```
+
+---
+
 ### Exportación de Modelos 3D
 
 #### Formatos Disponibles
@@ -287,15 +339,18 @@ Isobutano: CC(C)C
 ```
 
 ### Problema: "SMILES no válido"
-**Causa**: Notación SMILES incorrecta
+**Causa**: Notación SMILES incorrecta o demasiado compleja
 **Solución**:
 ```
 1. Verifica la sintaxis SMILES en herramientas como ChemSketch
-2. Ejemplos válidos:
+2. Asegúrate de que la longitud sea menor a 500 caracteres
+3. Verifica que no haya espacios en el SMILES
+4. Ejemplos válidos:
    - Metano: C
    - Etanol: CCO
    - Benceno: c1ccccc1
-3. Evita caracteres especiales no químicos
+5. Evita caracteres especiales no químicos
+6. Verifica que la molécula tenga menos de 150 átomos
 ```
 
 ### Problema: Visor 3D no carga
@@ -327,6 +382,36 @@ Isobutano: CC(C)C
 3. Verifica que el navegador permita descargas
 ```
 
+### Problema: Error al guardar compuesto
+**Causa**: Problemas de conectividad o límites de Firebase
+**Solución**:
+```
+1. Verifica tu conexión a internet
+2. Refresca la página e intenta nuevamente
+3. Verifica que el análisis del compuesto esté completo
+4. Si persiste, usa modo incógnito del navegador
+```
+
+### Problema: Compuestos guardados no aparecen
+**Causa**: Problemas de carga desde Firebase o cache del navegador
+**Solución**:
+```
+1. Refresca la página (F5)
+2. Verifica conexión a internet
+3. Borra cache del navegador para el sitio
+4. Intenta en modo incógnito
+```
+
+### Problema: SMILES demasiado complejo
+**Causa**: Molécula generada excede límites del sistema
+**Solución**:
+```
+1. Usa moléculas más simples para la combinación
+2. Cambia a un modelo de IA diferente (ej: Gemini 2.5 Flash Lite)
+3. Intenta la combinación nuevamente
+4. Verifica que el SMILES no contenga espacios o caracteres inválidos
+```
+
 ---
 
 ## Consejos y Mejores Prácticas
@@ -347,6 +432,8 @@ Isobutano: CC(C)C
 2. Evita cambiar estilos 3D frecuentemente
 3. Usa cache del navegador (no borres datos)
 4. Reinicia la aplicación si se vuelve lenta
+5. Guarda compuestos importantes regularmente
+6. Organiza tus compuestos guardados con nombres descriptivos
 ```
 
 ### Flujo de Trabajo Recomendado
@@ -366,6 +453,17 @@ Isobutano: CC(C)C
 3. Usa modelos IA apropiados (Pro para calidad, Flash para velocidad)
 4. Exporta resultados importantes
 5. Mantén registro de modificaciones exitosas
+6. Guarda compuestos prometedores para análisis posterior
+7. Documenta hallazgos en los análisis guardados
+```
+
+#### Para Gestión de Compuestos Guardados
+```
+1. Usa nombres descriptivos para las combinaciones
+2. Guarda solo resultados químicamente viables
+3. Revisa periódicamente tus compuestos guardados
+4. Usa compuestos guardados como base para nuevas modificaciones
+5. Exporta análisis importantes antes de experimentar
 ```
 
 ### Personalización Avanzada
@@ -460,6 +558,39 @@ for name, data in results.items():
     print(f"{name}: {data['smiles']}")
 ```
 
+### Integración con Firebase
+
+#### Acceso Directo a la Base de Datos
+```javascript
+// Para desarrolladores avanzados
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+
+async function getAllCompounds() {
+    const db = getFirestore();
+    const querySnapshot = await getDocs(collection(db, "compounds"));
+    
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+    });
+}
+```
+
+#### Backup de Compuestos Guardados
+```javascript
+// Exportar todos los compuestos a JSON
+async function exportCompounds() {
+    const compounds = await loadCompounds();
+    const dataStr = JSON.stringify(compounds, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'compuestos_guardados.json';
+    link.click();
+}
+```
+
 ---
 
 ## Recursos Adicionales
@@ -508,6 +639,12 @@ for name, data in results.items():
 **SVG**: Scalable Vector Graphics - Formato de imagen vectorial
 
 **Drag & Drop**: Funcionalidad de arrastrar y soltar
+
+**Firebase Firestore**: Base de datos NoSQL en la nube para almacenar compuestos
+
+**CompoundData**: Estructura de datos que incluye nombre, SMILES, análisis y fecha de creación
+
+**Validación SMILES**: Proceso de verificación de formato y complejidad de notaciones químicas
 
 ---
 

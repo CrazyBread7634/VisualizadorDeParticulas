@@ -90,7 +90,8 @@ async function renderSavedCompounds() {
                 <h3>Análisis del Compuesto Guardado: ${compound.name}</h3>
                 <div id="ai-analysis-content">${compound.analysis}</div>
             `;
-             resultSection.style.display = 'block';
+            resultSection.style.display = 'block';
+            resultSection.classList.add('visible');
         });
         container.appendChild(card);
     });

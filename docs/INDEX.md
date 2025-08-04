@@ -98,6 +98,11 @@ Esta es la documentación completa para **Quimática - Orgánica**, una aplicaci
 - **Sugerencias**: [Guía de Uso - Sugerencias](USAGE_GUIDE.md#sugerencias-inteligentes-con-menú-contextual)
 - **Modelos**: [Referencia API - Modelos IA](API_REFERENCE.md#getgenerativemodel)
 
+### Guardado y Persistencia
+- **Guardar Compuestos**: [Guía de Uso - Guardado](USAGE_GUIDE.md#guardado-y-gestión-de-compuestos)
+- **Firebase**: [Referencia API - Firebase](API_REFERENCE.md#apis-firebase-javascript)
+- **Gestión**: [Componentes - Compuestos Guardados](COMPONENTS.md#5-sección-de-compuestos-guardados-saved-compounds-section)
+
 ### SMILES y Formatos
 - **Renderizado**: [Referencia API - Render SMILES](API_REFERENCE.md#3-renderizar-smiles-personalizado)
 - **Ejemplos**: [Guía de Uso - SMILES](USAGE_GUIDE.md#moléculas-de-ejemplo)
@@ -158,11 +163,14 @@ combination.js # Combinación molecular
 | Visualización 3D | ✅ | ✅ | ✅ |
 | Combinación IA | ✅ | ✅ | ✅ |
 | Sugerencias IA | ✅ | ✅ | ✅ |
+| **Guardado Firebase** | ✅ | ✅ | ✅ |
+| **Gestión Compuestos** | ✅ | ✅ | ✅ |
+| **Validaciones SMILES** | ✅ | ✅ | ❌ |
 | Exportación 3D | ✅ | ❌ | ✅ |
 | SMILES Custom | ✅ | ✅ | ❌ |
 | Drag & Drop | ✅ | ❌ | ✅ |
 
-**Leyenda**: ✅ Documentado | ❌ No documentado
+**Leyenda**: ✅ Documentado | ❌ No documentado | **Negrita** = Nuevas funcionalidades
 
 ---
 
@@ -177,6 +185,8 @@ combination.js # Combinación molecular
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [Google AI Documentation](https://ai.google.dev/)
 - [Three.js Documentation](https://threejs.org/docs/)
+- [Firebase Documentation](https://firebase.google.com/docs)
+- [Firestore Web Documentation](https://firebase.google.com/docs/firestore/quickstart)
 
 ### Bases de Datos Moleculares
 - [PubChem](https://pubchem.ncbi.nlm.nih.gov/)
@@ -210,9 +220,11 @@ combination.js # Combinación molecular
 ⚠️ **API Key Expuesta**: La clave de Google AI está en el cliente. Ver [consideraciones de seguridad](API_REFERENCE.md#consideraciones-de-seguridad).
 
 ### Limitaciones
-- **SMILES**: Máximo 1000 caracteres recomendado
+- **SMILES**: Máximo 500 caracteres (validación estricta)
+- **Átomos**: Máximo 150 átomos por molécula
 - **Navegadores**: Requiere soporte ES6 modules
 - **IA**: Sujeto a cuotas de Google AI
+- **Firebase**: Limitado por cuotas gratuitas de Firestore
 
 ### Actualizaciones
 - **Versión actual**: v1.0
@@ -258,13 +270,16 @@ combination.js # Combinación molecular
 
 ### Cobertura
 - **APIs Backend**: 100% documentadas
-- **APIs Frontend**: 95% documentadas
+- **APIs Frontend**: 100% documentadas
+- **APIs Firebase**: 100% documentadas (nuevo)
 - **Componentes UI**: 100% documentados
-- **Casos de Uso**: 80% cubiertos
+- **Casos de Uso**: 90% cubiertos
+- **Validaciones**: 100% documentadas (nuevo)
 
 ### Métricas
 - **Páginas totales**: 4 documentos principales
-- **Ejemplos de código**: 50+ snippets
+- **Ejemplos de código**: 75+ snippets
+- **Nuevas funcionalidades**: 6 agregadas
 - **Capturas de pantalla**: Pendientes
 - **Videos tutoriales**: Pendientes
 

@@ -112,6 +112,7 @@
         </div>
     </div>
 
+    <!-- Tus otros scripts (Three.js, etc) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
@@ -124,13 +125,22 @@
     <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
 
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js"
+            }
+        }
+    </script>
     
-    <!-- Firebase configuration -->
+    <!-- Módulos de la aplicación -->
     <script src="{{ url_for('static', filename='js/firebase/config.js') }}" type="module"></script>
     <script src="{{ url_for('static', filename='js/firebase/db.js') }}" type="module"></script>
-    
+    <script src="{{ url_for('static', filename='js/viewer.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/ui.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/combination.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/api.js') }}" type="module"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
 </body>
 </html>

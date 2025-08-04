@@ -80,8 +80,9 @@ export function getCurrentBonds() {
 /**
  * Loads a molecule from the API and updates the 2D and 3D viewers.
  * @param {string} name - The name of the molecule to load.
+ * @param {string} smiles - Optional SMILES string. If provided, will use render_smiles endpoint.
  */
-export async function loadMolecule(name) {
+export async function loadMolecule(name, smiles = null) {
     animatedElements.forEach(el => el.classList.add('content-fading'));
 
     // Esperar a que la animación de salida comience
@@ -90,11 +91,29 @@ export async function loadMolecule(name) {
     try {
         const showAtoms = document.getElementById('show-atom-indices').checked;
         const showBonds = document.getElementById('show-bond-indices').checked;
-        const response = await fetch(`/api/molecule/${name}?show_atoms=${showAtoms}&show_bonds=${showBonds}`);
+        
+        let response, data;
+        
+        if (smiles) {
+            // Si se proporciona SMILES, usar el endpoint render_smiles
+            response = await fetch('/api/render_smiles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    smiles: smiles, 
+                    show_atoms: showAtoms, 
+                    show_bonds: showBonds 
+                })
+            });
+        } else {
+            // Si no hay SMILES, usar el endpoint tradicional por nombre
+            response = await fetch(`/api/molecule/${encodeURIComponent(name)}?show_atoms=${showAtoms}&show_bonds=${showBonds}`);
+        }
+        
         if (!response.ok) {
             throw new Error(`Error del servidor: ${response.status}`);
         }
-        const data = await response.json();
+        data = await response.json();
         
         loadMoleculeFromData(data, name);
         
