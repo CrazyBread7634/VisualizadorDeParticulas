@@ -3,7 +3,6 @@ import { app } from './config.js';
 
 const db = getFirestore(app);
 
-// Guardar un compuesto en la base de datos
 async function saveCompound(compoundData) {
     try {
         const docRef = await addDoc(collection(db, "compounds"), compoundData);
@@ -12,7 +11,6 @@ async function saveCompound(compoundData) {
     }
 }
 
-// Cargar todos los compuestos de la base de datos
 async function loadCompounds() {
     try {
         const querySnapshot = await getDocs(collection(db, "compounds"));
@@ -25,7 +23,6 @@ async function loadCompounds() {
     }
 }
 
-// Eliminar un compuesto de la base de datos
 async function deleteCompound(compoundId) {
     try {
         await deleteDoc(doc(db, "compounds", compoundId));
