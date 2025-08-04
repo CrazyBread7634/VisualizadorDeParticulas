@@ -56,7 +56,6 @@ async function handleSaveCompound() {
 
     try {
         await saveCompound(compoundData);
-        alert('Compuesto guardado con éxito!');
         button.textContent = 'Guardado';
         renderSavedCompounds();
     } catch (error) {
@@ -84,17 +83,19 @@ async function handleDeleteCompound() {
     if (!compoundToDelete) return;
     
     const confirmButton = document.getElementById('confirm-delete-btn');
-    const originalText = confirmButton.innerHTML;
+    const originalText = '<i class="fi fi-br-trash"></i> Eliminar';
     
     try {
         confirmButton.disabled = true;
         confirmButton.innerHTML = '<i class="fi fi-br-loading"></i> Eliminando...';
         
         await deleteCompound(compoundToDelete.id);
+        
+        confirmButton.disabled = false;
+        confirmButton.innerHTML = originalText;
+        
         hideDeleteConfirmation();
         renderSavedCompounds();
-        
-        alert('Compuesto eliminado con éxito');
         
     } catch (error) {
         console.error('Error al eliminar compuesto:', error);
