@@ -12,7 +12,7 @@
     --border-radius-large: 44px;
     --border-width: 1.5px;
     --border-color: #dee2e6;
-    --background-color: #f1f1f1;
+    --background-color: #f1f1f1ab;
     --white: #ffffff;
     --font-family-sans: 'Open Sans', sans-serif;
     --font-family-display: 'Poppins', sans-serif;
@@ -869,6 +869,42 @@ h1 {
     box-shadow: none;
 }
 
+/* --- Empty State --- */
+.empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: var(--border-radius-large);
+    border: 2px dashed var(--border-color);
+    margin: 20px 0;
+}
+
+.empty-state i {
+    font-size: 4em;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.empty-state p {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #666;
+    margin: 0 0 10px 0;
+    font-family: var(--font-family-display);
+}
+
+.empty-state .empty-hint {
+    font-size: 1em;
+    color: #888;
+    font-style: italic;
+    margin: 0;
+}
+
 @media (max-width: 768px) {
     #saved-compounds-container {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -889,6 +925,18 @@ h1 {
         padding: 8px 16px;
         font-size: 13px;
     }
+    
+    .empty-state {
+        padding: 40px 15px;
+    }
+    
+    .empty-state i {
+        font-size: 3em;
+    }
+    
+    .empty-state p {
+        font-size: 1.1em;
+    }
 }
 
 @media (max-width: 480px) {
@@ -900,6 +948,22 @@ h1 {
     .saved-compound-card {
         min-height: 140px;
         padding: 10px;
+    }
+    
+    .empty-state {
+        padding: 30px 10px;
+    }
+    
+    .empty-state i {
+        font-size: 2.5em;
+    }
+    
+    .empty-state p {
+        font-size: 1em;
+    }
+    
+    .empty-state .empty-hint {
+        font-size: 0.9em;
     }
 }
 

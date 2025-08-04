@@ -71,7 +71,13 @@ async function renderSavedCompounds() {
     const compounds = await loadCompounds();
     container.innerHTML = '';
     if (compounds.length === 0) {
-        container.innerHTML = '<p>No hay compuestos guardados.</p>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fi fi-br-empty-set"></i>
+                <p>No hay compuestos guardados.</p>
+                <span class="empty-hint">Combina moléculas y guarda los resultados.</span>
+            </div>
+        `;
         return;
     }
     compounds.forEach(compound => {

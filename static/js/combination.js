@@ -158,16 +158,26 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
             console.error("SMILES inválido o demasiado largo:", combinedSmiles);
             throw new Error('El SMILES generado es inválido o demasiado complejo.');
         }
+            
+        const mol1Length = molSlot1.smiles.length;
+        const mol2Length = molSlot2.smiles.length;
+        const combinedLength = combinedSmiles.length;
         
-        // Verificar que no sea una concatenacion de las moleulas originales
         if (combinedSmiles === molSlot1.smiles + molSlot2.smiles || 
-            combinedSmiles === molSlot2.smiles + molSlot1.smiles) {
+            combinedSmiles === molSlot2.smiles + molSlot1.smiles ||
+            combinedLength > (mol1Length + mol2Length - 10)) {
             console.error("La IA concatenó las moléculas en lugar de combinarlas:", combinedSmiles);
-            throw new Error('La IA no realizó una combinación química válida.');
+            console.error("Longitudes - Mol1:", mol1Length, "Mol2:", mol2Length, "Combinado:", combinedLength);
+            throw new Error('La IA concatenó las moléculas en lugar de crear una combinación química válida.');
         }
         
         updateButtonState('Renderizando...', true);
-        await handleSuggestionClick(combinedSmiles);
+        const renderResult = await handleSuggestionClick(combinedSmiles);
+        
+        if (renderResult === false) {
+            return;
+        }
+        
         document.querySelector('h1').textContent = 'Resultado de la Combinación';
         await analyzeCombinedMolecule(combinedSmiles);
         scrollToResults();
@@ -183,24 +193,43 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
             errorMessage = 'IA Sobrecargada';
         } else if (error.message && error.message.includes('no es válido')) {
             errorMessage = 'SMILES Inválido';
+        } else if (error.message && error.message.includes('concatenó')) {
+            errorMessage = 'IA Concatenó Moléculas';
         }
         
         updateButtonState(errorMessage, false, false);
         setMoleculeCardsDisabled(false);
         
-        showCombinationResult(`
-            <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
-                <h4>❌ Error en la Combinación</h4>
-                <p><strong>La IA generó una molécula demasiado compleja o químicamente imposible.</strong></p>
-                <p>Esto puede ocurrir porque:</p>
-                <ul style="text-align: left; margin: 15px 0;">
-                    <li>El modelo de IA concatenó las moléculas en lugar de combinarlas químicamente</li>
-                    <li>La estructura resultante es demasiado grande para procesar</li>
-                    <li>La molécula generada no es químicamente estable</li>
-                </ul>
-                <p><em>Consejo: Intenta usar un modelo de IA diferente.</em></p>
-            </div>
-        `);
+        let errorContent = '';
+        if (error.message && error.message.includes('concatenó')) {
+            errorContent = `
+                <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h4>🔗 IA Concatenó las Moléculas</h4>
+                    <p><strong>La IA pegó las moléculas en lugar de combinarlas químicamente.</strong></p>
+                    <div style="background-color: #f5f5f5; padding: 15px; margin: 15px 0; border-radius: 8px; text-align: left;">
+                        <p><strong>Lo que pasó:</strong> En lugar de formar un enlace químico entre las moléculas, la IA simplemente las concatenó (pegó) una tras otra.</p>
+                        <p><strong>Por ejemplo:</strong> Mol1 + Mol2 = Mol1Mol2 ❌</p>
+                        <p><strong>Debería ser:</strong> Mol1 + Mol2 = Nueva molécula híbrida ✅</p>
+                    </div>
+                    <p><em><strong>Solución:</strong> Gemini tiende a hacer esto. Prueba con GPT-4 que es mejor para química.</em></p>
+                </div>
+            `;
+        } else {
+            errorContent = `
+                <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h4>❌ Error en la Combinación</h4>
+                    <p><strong>La IA generó una molécula demasiado compleja o químicamente imposible.</strong></p>
+                    <p>Esto puede ocurrir porque:</p>
+                    <ul style="text-align: left; margin: 15px 0;">
+                        <li>El modelo de IA concatenó las moléculas en lugar de combinarlas químicamente</li>
+                        <li>La estructura resultante es demasiado grande para procesar</li>
+                        <li>La molécula generada no es químicamente estable</li>
+                    </ul>
+                    <p><em>Consejo: Intenta usar un modelo de IA diferente.</em></p>
+                </div>
+            `;
+        }
+        showCombinationResult(errorContent);
         
         setTimeout(() => {
             updateButtonState('Limpiar Combinación', false, false);
@@ -327,6 +356,6 @@ export async function handleSuggestionClick(newSmiles) {
             updateButtonState('Limpiar Combinación', false, false);
         }, 3000);
         
-        throw error;
+        return false;
     }
 }
