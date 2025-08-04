@@ -13,9 +13,10 @@ import {
     initContextMenu 
 } from './ui.js';
 import { setupDragAndDrop, clearCombination, combineMolecules } from './combination.js';
-import { saveCompound, loadCompounds } from './firebase/db.js';
+import { saveCompound, loadCompounds, deleteCompound } from './firebase/db.js';
 
 let currentSelectedMolecule = 'estradiol';
+let compoundToDelete = null;
 
 function handleDownload() {
     const viewer = getViewer();
@@ -65,6 +66,44 @@ async function handleSaveCompound() {
     }
 }
 
+function showDeleteConfirmation(compound) {
+    compoundToDelete = compound;
+    const popup = document.getElementById('delete-confirmation-popup');
+    const compoundNameElement = popup.querySelector('.compound-name-to-delete');
+    compoundNameElement.textContent = `"${compound.name}"`;
+    popup.style.display = 'flex';
+}
+
+function hideDeleteConfirmation() {
+    const popup = document.getElementById('delete-confirmation-popup');
+    popup.style.display = 'none';
+    compoundToDelete = null;
+}
+
+async function handleDeleteCompound() {
+    if (!compoundToDelete) return;
+    
+    const confirmButton = document.getElementById('confirm-delete-btn');
+    const originalText = confirmButton.innerHTML;
+    
+    try {
+        confirmButton.disabled = true;
+        confirmButton.innerHTML = '<i class="fi fi-br-loading"></i> Eliminando...';
+        
+        await deleteCompound(compoundToDelete.id);
+        hideDeleteConfirmation();
+        renderSavedCompounds();
+        
+        alert('Compuesto eliminado con éxito');
+        
+    } catch (error) {
+        console.error('Error al eliminar compuesto:', error);
+        alert('Error al eliminar el compuesto. Por favor, intenta de nuevo.');
+        confirmButton.disabled = false;
+        confirmButton.innerHTML = originalText;
+    }
+}
+
 async function renderSavedCompounds() {
     const container = document.getElementById('saved-compounds-container');
     container.innerHTML = 'Cargando...';
@@ -84,9 +123,15 @@ async function renderSavedCompounds() {
         const card = document.createElement('div');
         card.className = 'molecule-card saved-compound-card';
         card.innerHTML = `
+            <button class="delete-compound-btn" title="Eliminar compuesto">
+                <i class="fi fi-br-trash"></i>
+            </button>
             <p>${compound.name}</p>
-            <button class="control-btn load-btn">Cargar</button>
+            <div class="card-buttons">
+                <button class="control-btn load-btn">Cargar</button>
+            </div>
         `;
+        
         card.querySelector('.load-btn').addEventListener('click', () => {
             loadMolecule(compound.name, compound.smiles);
             const resultSection = document.getElementById('combination-result-section');
@@ -97,6 +142,12 @@ async function renderSavedCompounds() {
             resultSection.style.display = 'block';
             resultSection.classList.add('visible');
         });
+        
+        card.querySelector('.delete-compound-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            showDeleteConfirmation(compound);
+        });
+        
         container.appendChild(card);
     });
 }
@@ -149,6 +200,15 @@ function init() {
     document.getElementById('combination-result-section').addEventListener('click', (event) => {
         if (event.target && event.target.id === 'save-compound-btn') {
             handleSaveCompound();
+        }
+    });
+
+    document.getElementById('cancel-delete-btn').addEventListener('click', hideDeleteConfirmation);
+    document.getElementById('confirm-delete-btn').addEventListener('click', handleDeleteCompound);
+    
+    document.getElementById('delete-confirmation-popup').addEventListener('click', (e) => {
+        if (e.target.id === 'delete-confirmation-popup') {
+            hideDeleteConfirmation();
         }
     });
 

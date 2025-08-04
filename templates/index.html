@@ -142,5 +142,27 @@
         </div>
     </div>
 
+    <!-- Popup de confirmación para eliminar -->
+    <div id="delete-confirmation-popup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="popup-header">
+                <i class="fi fi-br-exclamation-triangle"></i>
+                <h3>Confirmar Eliminación</h3>
+            </div>
+            <div class="popup-body">
+                <p>¿Estás seguro de que deseas eliminar este compuesto?</p>
+                <p class="compound-name-to-delete"></p>
+                <p class="warning-text">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="popup-footer">
+                <button id="cancel-delete-btn" class="control-btn-secondary">Cancelar</button>
+                <button id="confirm-delete-btn" class="control-btn delete-btn">
+                    <i class="fi fi-br-trash"></i>
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

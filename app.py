@@ -15,33 +15,24 @@ molecules_db = {
 def smiles_to_mol_block(smiles):
     """Convierte una cadena SMILES a un bloque MOL 3D optimizado."""
     try:
-        # Validaciones iniciales
-        if len(smiles) > 500:  # SMILES demasiado largo
-            print(f"SMILES demasiado complejo (longitud: {len(smiles)})")
-            return None
-            
+        # Validación mínima - solo verificar que RDKit pueda parsear
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
+            print(f"RDKit no puede parsear SMILES: {smiles}")
             return None
             
-        # Verificar si la molécula es demasiado grande
         num_atoms = mol.GetNumAtoms()
-        if num_atoms > 150:  # Límite razonable de átomos
-            print(f"Molécula demasiado grande ({num_atoms} átomos)")
-            return None
+        print(f"📊 Procesando molécula con {num_atoms} átomos (longitud SMILES: {len(smiles)})")
             
         mol = Chem.AddHs(mol)  # Añadir hidrógenos
         
-        # Intentar generar conformación 3D con múltiples intentos
         embed_result = AllChem.EmbedMolecule(mol, AllChem.ETKDG())
         if embed_result == -1:
-            # Si falla, intentar sin restricciones estéreo
             embed_result = AllChem.EmbedMolecule(mol, randomSeed=42)
             if embed_result == -1:
                 print("No se pudo generar conformación 3D")
                 return None
         
-        # Optimizar con campo de fuerza MMFF94
         try:
             AllChem.MMFFOptimizeMolecule(mol)
         except:
@@ -54,7 +45,6 @@ def smiles_to_mol_block(smiles):
         return None
 
 def smiles_to_svg(smiles, show_atom_indices=True, show_bond_indices=True):
-    """Convierte SMILES a SVG y extrae información de enlaces."""
     try:
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
@@ -62,7 +52,6 @@ def smiles_to_svg(smiles, show_atom_indices=True, show_bond_indices=True):
 
         rdDepictor.Compute2DCoords(mol)
 
-        # Extraer información de los enlaces antes de dibujar
         bonds = []
         for bond in mol.GetBonds():
             bonds.append({
@@ -86,12 +75,10 @@ def smiles_to_svg(smiles, show_atom_indices=True, show_bond_indices=True):
 
 @app.route('/')
 def index():
-    """Sirve la página principal de la aplicación."""
     return render_template('index.html')
 
 @app.route('/api/molecule/<molecule_name>')
 def get_molecule(molecule_name):
-    """Devuelve la estructura de una molécula con opciones de visualización."""
     smiles = molecules_db.get(molecule_name)
     if not smiles:
         return jsonify({"error": "Molécula no encontrada"}), 404
@@ -109,7 +96,6 @@ def get_molecule(molecule_name):
 
 @app.route('/api/render_smiles', methods=['POST'])
 def render_smiles():
-    """Genera una estructura a partir de un SMILES con opciones de visualización."""
     data = request.json
     smiles = data.get('smiles')
     show_atoms = data.get('show_atoms', True)
@@ -117,8 +103,6 @@ def render_smiles():
 
     if not smiles:
         return jsonify({"error": "No se proporcionó SMILES"}), 400
-
-    print(f"Procesando SMILES: {smiles}")  # Log para debugging
     
     mol_block = smiles_to_mol_block(smiles)
     svg_image, bonds_data = smiles_to_svg(smiles, show_atom_indices=show_atoms, show_bond_indices=show_bonds)
@@ -133,7 +117,6 @@ def render_smiles():
             error_details.append("No se pudo generar la representación 2D")
         
         detailed_error = f"Error procesando SMILES '{smiles}': {', '.join(error_details)}"
-        print(f"Error detallado: {detailed_error}")  # Log para debugging
         
         return jsonify({
             "error": "El SMILES proporcionado no es válido o no se pudo generar la estructura.",

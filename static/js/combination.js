@@ -133,6 +133,7 @@ Instrucciones:
 5. Por ninguna razon debes añadir texto adicional a la respuesta. Ni comenzar con texto, ni finalizar con texto.
 6. No añadas comentarios adicionales a la respuesta.
 7. Genera unicamente la cadena SMILES de la molécula combinada.
+8. No solamente concatenar las moléculas, sino que debes combinarlas de manera química.
 
 Genera una respuesta en formato JSON con la siguiente estructura:
 {
@@ -148,28 +149,19 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
         const responseObject = JSON.parse(jsonString);
         const combinedSmiles = responseObject.combinedSmiles;
 
-        // Validaciones mltiples del SMILES generado
+        
         if (!combinedSmiles || typeof combinedSmiles !== 'string') {
             console.error("La IA no generó un SMILES válido en el JSON:", rawResponse);
             throw new Error('La IA no generó un SMILES válido.');
         }
         
-        if (combinedSmiles.includes(' ') || combinedSmiles.length > 300) {
-            console.error("SMILES inválido o demasiado largo:", combinedSmiles);
-            throw new Error('El SMILES generado es inválido o demasiado complejo.');
+        if (combinedSmiles.includes(' ')) {
+            console.error("SMILES contiene espacios:", combinedSmiles);
+            throw new Error('El SMILES generado contiene espacios.');
         }
-            
-        const mol1Length = molSlot1.smiles.length;
-        const mol2Length = molSlot2.smiles.length;
-        const combinedLength = combinedSmiles.length;
         
-        if (combinedSmiles === molSlot1.smiles + molSlot2.smiles || 
-            combinedSmiles === molSlot2.smiles + molSlot1.smiles ||
-            combinedLength > (mol1Length + mol2Length - 10)) {
-            console.error("La IA concatenó las moléculas en lugar de combinarlas:", combinedSmiles);
-            console.error("Longitudes - Mol1:", mol1Length, "Mol2:", mol2Length, "Combinado:", combinedLength);
-            throw new Error('La IA concatenó las moléculas en lugar de crear una combinación química válida.');
-        }
+        console.log(`📊 Longitudes: Estradiol(${molSlot1.smiles.length}) + Fulvestrant(${molSlot2.smiles.length}) = Combinado(${combinedSmiles.length})`);
+        
         
         updateButtonState('Renderizando...', true);
         const renderResult = await handleSuggestionClick(combinedSmiles);
@@ -193,43 +185,25 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
             errorMessage = 'IA Sobrecargada';
         } else if (error.message && error.message.includes('no es válido')) {
             errorMessage = 'SMILES Inválido';
-        } else if (error.message && error.message.includes('concatenó')) {
-            errorMessage = 'IA Concatenó Moléculas';
         }
         
         updateButtonState(errorMessage, false, false);
         setMoleculeCardsDisabled(false);
         
-        let errorContent = '';
-        if (error.message && error.message.includes('concatenó')) {
-            errorContent = `
-                <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
-                    <h4>🔗 IA Concatenó las Moléculas</h4>
-                    <p><strong>La IA pegó las moléculas en lugar de combinarlas químicamente.</strong></p>
-                    <div style="background-color: #f5f5f5; padding: 15px; margin: 15px 0; border-radius: 8px; text-align: left;">
-                        <p><strong>Lo que pasó:</strong> En lugar de formar un enlace químico entre las moléculas, la IA simplemente las concatenó (pegó) una tras otra.</p>
-                        <p><strong>Por ejemplo:</strong> Mol1 + Mol2 = Mol1Mol2 ❌</p>
-                        <p><strong>Debería ser:</strong> Mol1 + Mol2 = Nueva molécula híbrida ✅</p>
-                    </div>
-                    <p><em><strong>Solución:</strong> Gemini tiende a hacer esto. Prueba con GPT-4 que es mejor para química.</em></p>
-                </div>
-            `;
-        } else {
-            errorContent = `
-                <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
-                    <h4>❌ Error en la Combinación</h4>
-                    <p><strong>La IA generó una molécula demasiado compleja o químicamente imposible.</strong></p>
-                    <p>Esto puede ocurrir porque:</p>
-                    <ul style="text-align: left; margin: 15px 0;">
-                        <li>El modelo de IA concatenó las moléculas en lugar de combinarlas químicamente</li>
-                        <li>La estructura resultante es demasiado grande para procesar</li>
-                        <li>La molécula generada no es químicamente estable</li>
-                    </ul>
-                    <p><em>Consejo: Intenta usar un modelo de IA diferente.</em></p>
-                </div>
-            `;
-        }
-        showCombinationResult(errorContent);
+        // Mostrar mensaje de error estándar (sin mencionar concatenación)
+        showCombinationResult(`
+            <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
+                <h4>❌ Error en la Combinación</h4>
+                <p><strong>No se pudo procesar la molécula generada por la IA.</strong></p>
+                <p>Esto puede ocurrir porque:</p>
+                <ul style="text-align: left; margin: 15px 0;">
+                    <li>La estructura resultante es demasiado compleja para procesar</li>
+                    <li>La molécula generada no es químicamente estable</li> 
+                    <li>RDKit no puede generar la estructura 3D</li>
+                </ul>
+                <p><em>Consejo: Intenta usar un modelo de IA diferente o inténtalo de nuevo.</em></p>
+            </div>
+        `);
         
         setTimeout(() => {
             updateButtonState('Limpiar Combinación', false, false);
@@ -250,7 +224,7 @@ La molécula es un derivado combinado de Estradiol y Fulvestrant. Tu análisis d
 
 Genera una respuesta en formato JSON con la siguiente estructura exacta:
 {
-  "suggestedName": "Un nombre químico apropiado y científicamente razonable.",
+  "suggestedName": "Un nombre químico apropiado y científicamente razonable. Que no sea excesivamente largo.",
   "keyChemicalFeatures": "Un resumen técnico de las características estructurales: grupos funcionales, puntos de interacción, sitios reactivos.",
   "potentialPharmacologicalProperties": "Una explicación de las posibles propiedades biológicas y farmacológicas, considerando su perfil agonista/antagonista sobre receptores de estrógeno.",
   "potentialUses": "Al menos un posible uso farmacológico o área de investigación relevante para esta molécula."
@@ -301,9 +275,8 @@ export async function handleSuggestionClick(newSmiles) {
     try {
         console.log('Intentando procesar SMILES:', newSmiles);
         
-        // Validar el SMILES antes de enviarlo al server
-        if (!newSmiles || newSmiles.length > 500 || newSmiles.includes(' ')) {
-            throw new Error('SMILES inválido o demasiado complejo');
+        if (!newSmiles || newSmiles.includes(' ')) {
+            throw new Error('SMILES inválido');
         }
         
         const response = await fetch('/api/render_smiles', {
