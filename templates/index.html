@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quimática - Orgánica</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/STLExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/FBXExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/3MFExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/AMFExporter.js"></script>
+    <script src="https://3dmol.csb.pitt.edu/build/3Dmol.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+
+    <!-- Firebase -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js"
+            }
+        }
+    </script>
+    
+    <script src="{{ url_for('static', filename='js/firebase/config.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/firebase/db.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/viewer.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/ui.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/combination.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/api.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
 </head>
 <body>
     <div class="container">
@@ -67,7 +96,7 @@
             </div>
             <div id="viewer-2d"></div>
             <div class="viewer-loader-overlay" style="display: none;">
-                <!-- El contenido del loader se generará dinámicamente -->
+                <!-- JS -->
             </div>
         </div>
 
@@ -96,51 +125,21 @@
             </div>
             <div id="viewer-3d"></div>
             <div class="viewer-loader-overlay" style="display: none;">
-                <!-- El contenido del loader se generará dinámicamente -->
+                <!-- JS -->
             </div>
         </div>
 
         <div id="combination-result-section" class="viewer-section">
-            <!-- Contenido generado por JS -->
+            <!-- JS -->
         </div>
 
         <div id="saved-compounds-section" class="top-section">
             <h3>Compuestos Guardados</h3>
             <div id="saved-compounds-container" class="molecule-card-container">
-                <!-- Los compuestos guardados se cargarán aquí -->
+                <!-- JS -->
             </div>
         </div>
     </div>
 
-    <!-- Tus otros scripts (Three.js, etc) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.lordicon.com/lordicon.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/STLExporter.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/FBXExporter.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/3MFExporter.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/AMFExporter.js"></script>
-    <script src="https://3dmol.csb.pitt.edu/build/3Dmol.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
-
-    <!-- Firebase -->
-    <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js"
-            }
-        }
-    </script>
-    
-    <!-- Módulos de la aplicación -->
-    <script src="{{ url_for('static', filename='js/firebase/config.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/firebase/db.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/viewer.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/ui.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/combination.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/api.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
 </body>
 </html>

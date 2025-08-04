@@ -6,9 +6,8 @@ let currentMolBlock = '';
 let currentBonds = [];
 let lastHoveredAtom = null;
 let panZoomInstance = null;
-let currentMoleculeName = ''; // Variable para preservar el nombre
+let currentMoleculeName = '';
 
-// Elementos a animar
 const animatedElements = [
     document.getElementById('molecule-name-2d'),
     document.getElementById('molecule-name-3d'),
@@ -23,11 +22,9 @@ const moleculeName2d = document.getElementById('molecule-name-2d');
 const moleculeName3d = document.getElementById('molecule-name-3d');
 
 export function showViewerLoaders(message = "Combinando Moléculas...") {
-    // Aplicar animación de desvanecimiento
     animatedElements.forEach(el => el.classList.add('content-fading'));
 
     setTimeout(() => {
-        // Actualizar títulos
         moleculeName2d.textContent = message;
         moleculeName3d.textContent = message;
         
@@ -43,16 +40,14 @@ export function showViewerLoaders(message = "Combinando Moléculas...") {
             </div>
         `;
         
-        // Cargar loaders
-        viewer2dOverlay.innerHTML = loaderHtml; // Carga el loader en el overlay 2D
-        viewer2dOverlay.style.display = 'flex'; // Muestra el overlay 2D
+        viewer2dOverlay.innerHTML = loaderHtml;
+        viewer2dOverlay.style.display = 'flex';
         
-        viewer3dOverlay.innerHTML = loaderHtml; // Carga el loader en el overlay 3D
-        viewer3dOverlay.style.display = 'flex'; // Muestra el overlay 3D
+        viewer3dOverlay.innerHTML = loaderHtml;
+        viewer3dOverlay.style.display = 'flex';
         
-        // Revelar los loaders
         animatedElements.forEach(el => el.classList.remove('content-fading'));
-    }, 300); // Sincronizar con la animación
+    }, 300);
 }
 
 
@@ -77,15 +72,10 @@ export function getCurrentBonds() {
     return currentBonds;
 }
 
-/**
- * Loads a molecule from the API and updates the 2D and 3D viewers.
- * @param {string} name - The name of the molecule to load.
- * @param {string} smiles - Optional SMILES string. If provided, will use render_smiles endpoint.
- */
+
 export async function loadMolecule(name, smiles = null) {
     animatedElements.forEach(el => el.classList.add('content-fading'));
 
-    // Esperar a que la animación de salida comience
     await new Promise(resolve => setTimeout(resolve, 300));
 
     try {
@@ -95,7 +85,6 @@ export async function loadMolecule(name, smiles = null) {
         let response, data;
         
         if (smiles) {
-            // Si se proporciona SMILES, usar el endpoint render_smiles
             response = await fetch('/api/render_smiles', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -106,7 +95,6 @@ export async function loadMolecule(name, smiles = null) {
                 })
             });
         } else {
-            // Si no hay SMILES, usar el endpoint tradicional por nombre
             response = await fetch(`/api/molecule/${encodeURIComponent(name)}?show_atoms=${showAtoms}&show_bonds=${showBonds}`);
         }
         
@@ -143,25 +131,22 @@ export async function rerenderCurrentMolecule() {
             throw new Error(errorData.error || `Server error: ${response.status}`);
         }
         const data = await response.json();
-        loadMoleculeFromData(data, currentMoleculeName); // Re-renderizar con el nombre guardado
+        loadMoleculeFromData(data, currentMoleculeName);
     } catch (error) {
         console.error('Error al re-renderizar la molécula:', error);
     }
 }
 
 export function loadMoleculeFromData(data, name = "Nueva Molécula") {
-    // Actualizar estado global
     currentSmiles = data.smiles;
     currentMolBlock = data.mol;
     currentBonds = data.bonds;
-    currentMoleculeName = name; // Guardar el nombre actual
+    currentMoleculeName = name;
 
-    // Actualizar nombres en los títulos
     const displayName = name.charAt(0).toUpperCase() + name.slice(1);
     moleculeName2d.textContent = displayName;
     moleculeName3d.textContent = displayName;
 
-    // Renderizar Vista 3D
     viewer.clear();
     viewer.addModel(currentMolBlock, 'mol');
     update3DStyle();
@@ -170,14 +155,12 @@ export function loadMoleculeFromData(data, name = "Nueva Molécula") {
     setup3Dinteractivity();
     toggle3DLabels();
 
-    // Renderizar Vista 2D y ocultar overlays
     viewer2DContainer.innerHTML = data.svg;
     viewer2dOverlay.style.display = 'none';
     viewer3dOverlay.style.display = 'none';
     setup2Dinteractivity();
     setupBondInteractivity();
 
-    // Revelar el nuevo contenido
     animatedElements.forEach(el => el.classList.remove('content-fading'));
 }
 

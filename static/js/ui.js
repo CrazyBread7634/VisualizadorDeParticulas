@@ -13,17 +13,11 @@ const clearCombinationBtn = document.getElementById('clear-combination-btn');
 const combinationResultSection = document.getElementById('combination-result-section');
 const moleculeCards = document.querySelectorAll('.molecule-card');
 
-let isFetchingSuggestions = false; // Variable de bloqueo
-let currentContext = {}; // Para guardar el contexto del átomo/enlace
+let isFetchingSuggestions = false;
+let currentContext = {};
 
-/**
- * Extrae de forma robusta un objeto JSON de una cadena de texto sin procesar.
- * Intenta encontrar bloques de código markdown o arrays JSON directos.
- * @param {string} rawText - La respuesta de la IA.
- * @returns {object|null} El objeto JSON parseado o null si no se encuentra.
- */
+
 function extractJson(rawText) {
-    // Método 1: Buscar un bloque de código markdown (```json ... ``` o ``` ... ```)
     const markdownMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (markdownMatch && markdownMatch[1]) {
         try {
@@ -33,7 +27,6 @@ function extractJson(rawText) {
         }
     }
 
-    // Método 2: Buscar un array JSON crudo incrustado en el texto
     const arrayMatch = rawText.match(/(\[\s*{[\s\S]*?}\s*\])/);
      if (arrayMatch && arrayMatch[0]) {
         try {
@@ -43,14 +36,9 @@ function extractJson(rawText) {
         }
     }
 
-    // Si ambos métodos fallan
     return null;
 }
 
-/**
- * Habilita o deshabilita la interacción con las tarjetas de moléculas.
- * @param {boolean} disabled - True para deshabilitar, false para habilitar.
- */
 export function setMoleculeCardsDisabled(disabled) {
     moleculeCards.forEach(card => {
         if (disabled) {
@@ -61,27 +49,20 @@ export function setMoleculeCardsDisabled(disabled) {
     });
 }
 
-/**
- * Limpia una cadena de texto para extraer únicamente la parte que parece ser un SMILES.
- * Se asume que el SMILES es la última "palabra" en la cadena.
- * @param {string} rawSmiles - La cadena SMILES potencialmente sucia de la IA.
- * @returns {string} La cadena SMILES limpia.
- */
+
 function cleanSmilesFromAiResponse(rawSmiles) {
     if (!rawSmiles) return "";
     const cleaned = String(rawSmiles).trim();
-    // Divide por espacios y toma la última parte.
     const parts = cleaned.split(/\s+/);
     let potentialSmiles = parts[parts.length - 1];
     
-    // Eliminar puntuación común al final de la cadena.
     potentialSmiles = potentialSmiles.replace(/[.,;:]+$/, '');
     
     return potentialSmiles;
 }
 
 export function handleAtomClick(atom, event = null) {
-    if (isFetchingSuggestions) return; // Bloquear si ya hay una petición
+    if (isFetchingSuggestions) return;
     currentContext = { type: 'atom', id: atom.serial };
     const atomElement = atom.elem;
 
@@ -96,7 +77,7 @@ export function handleAtomClick(atom, event = null) {
 }
 
 export function handleBondClick(event, bondData) {
-    if (isFetchingSuggestions) return; // Bloquear si ya hay una petición
+    if (isFetchingSuggestions) return;
     currentContext = { type: 'bond', id: bondData.bond_index };
     const title = `Sugerencias para Enlace E-${bondData.bond_index}`;
     showContextMenu(event, title);
@@ -107,7 +88,7 @@ function hideContextMenu() {
         contextMenu.style.display = 'none';
         contextMenuContent.innerHTML = '';
         contextMenuTitle.textContent = '';
-        isFetchingSuggestions = false; // Desbloquear al cerrar
+        isFetchingSuggestions = false;
     }
 }
 
@@ -148,7 +129,6 @@ Responde SÓLO con el array JSON.
         const result = await suggestionModel.generateContent(prompt);
         const rawResponse = (await result.response).text();
 
-        // Usar la nueva función de extracción robusta
         const suggestions = extractJson(rawResponse);
 
         if (!suggestions) {
@@ -162,7 +142,6 @@ Responde SÓLO con el array JSON.
                 const btn = document.createElement('button');
                 btn.innerHTML = `<i class="fi fi-rr-sparkles"></i><span>${sugg.description}</span>`;
                 btn.onclick = () => {
-                    // Limpieza robusta del SMILES de la sugerencia.
                     const cleanedSmiles = cleanSmilesFromAiResponse(sugg.new_smiles);
                     handleSuggestionClick(cleanedSmiles);
                     hideContextMenu();
@@ -184,7 +163,7 @@ Responde SÓLO con el array JSON.
         contextMenuContent.style.display = 'flex';
     } finally {
         contextMenuLoader.style.display = 'none';
-        isFetchingSuggestions = false; // Desbloquear al finalizar
+        isFetchingSuggestions = false;
     }
 }
 
@@ -195,11 +174,10 @@ async function handleCustomPrompt() {
     const userPrompt = customPromptInput.value;
     const prompt = `Dada la molécula con SMILES '${getCurrentSmiles()}', y la instrucción del usuario: "${userPrompt}", genera el nuevo SMILES resultante. Devuelve solo la cadena SMILES.`;
     
-    // Muestra un loader global o en el botón principal
     updateButtonState('Procesando IA...', true);
 
     try {
-        const result = await suggestionModel.generateContent(prompt); // Usar el modelo rápido aquí también
+        const result = await suggestionModel.generateContent(prompt);
         const rawResponse = (await result.response).text();
         const newSmiles = rawResponse.replace(/```(smiles|json|html)?/g, '').replace(/```/g, '').trim().split('\n').pop().trim();
         
@@ -222,9 +200,6 @@ async function handleCustomPrompt() {
         customPromptInput.value = '';
     }
 }
-
-
-// --- Lógica de la Interfaz de Usuario Principal ---
 
 const feedbackPhrases = [
     "Mezclando reactivos...",
@@ -253,7 +228,7 @@ const feedbackPhrases = [
 let feedbackInterval = null;
 
 function startFeedbackCarousel(btnText) {
-    if (feedbackInterval) return; // Evitar iniciar múltiples carruseles
+    if (feedbackInterval) return;
 
     let phraseIndex = 0;
     const showNextPhrase = () => {
@@ -285,10 +260,10 @@ export function populateMoleculeCards() {
         if (initialMolecules[moleculeName]) {
             card.dataset.smiles = initialMolecules[moleculeName];
             
-            card.innerHTML = ''; // Limpiar loader
+            card.innerHTML = '';
             
             const img = document.createElement('img');
-            img.src = `/static/media/${moleculeName}.png`; // Cargar desde la carpeta static/media
+            img.src = `/static/media/${moleculeName}.png`;
             img.alt = moleculeName;
             
             const nameLabel = document.createElement('span');
@@ -373,7 +348,6 @@ function makeDraggable() {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
 
-        // Evitar la selección de texto mientras se arrastra
         document.body.style.userSelect = 'none';
     });
 
@@ -389,14 +363,12 @@ function makeDraggable() {
         isDragging = false;
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
-        // Restaurar la selección de texto
         document.body.style.userSelect = '';
     }
 }
 
-// (Se asume que esto se llamará desde main.js)
 export function initContextMenu() {
     customPromptBtn.addEventListener('click', handleCustomPrompt);
     document.getElementById('context-menu-close').addEventListener('click', hideContextMenu);
-    makeDraggable(); // Activar la lógica de arrastre
+    makeDraggable();
 } 

@@ -26,8 +26,6 @@ function handleDownload() {
     const format = document.getElementById('download-format-select').value;
     const model = viewer.getModel();
     const scene = new THREE.Scene();
-    // ... (Lógica de exportación 3D, puede ser movida a su propio módulo si crece)
-    // Por simplicidad, la mantenemos aquí por ahora.
 }
 
 function downloadBlob(data, filename, mimeType) {
@@ -99,11 +97,10 @@ async function renderSavedCompounds() {
 
 function init() {
     initViewer();
-    initContextMenu(); // Inicializar la lógica del menú contextual
+    initContextMenu();
     populateMoleculeCards();
     setupDragAndDrop();
 
-    // --- Event Listeners ---
     document.querySelectorAll('.molecule-card').forEach(card => {
         card.addEventListener('click', () => {
             const moleculeName = card.dataset.moleculeName;
@@ -136,7 +133,6 @@ function init() {
     
     const combinationBtn = document.getElementById('clear-combination-btn');
     combinationBtn.addEventListener('click', () => {
-        // La función del botón depende de su estado actual
         if (combinationBtn.textContent.includes('Combinar')) {
             combineMolecules();
         } else {
@@ -150,7 +146,6 @@ function init() {
         }
     });
 
-    // Carga inicial
     loadMolecule(currentSelectedMolecule);
     updateCardSelection(currentSelectedMolecule);
     updateButtonState('Limpiar Combinación', false, true);

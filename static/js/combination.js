@@ -74,7 +74,6 @@ async function handleMoleculeDrop(event) {
         if (molSlot1 && molSlot2) {
             updateButtonState('Combinar Moléculas', false);
         } else {
-            // Si solo hay una molécula, el botón sigue deshabilitado pero podría decir "Limpiar"
             updateButtonState('Limpiar Combinación', false, false); 
         }
 
@@ -88,7 +87,7 @@ function updateSlotUI(slotElement, moleculeData) {
     slotElement.innerHTML = '';
     slotElement.classList.add('occupied');
     const img = document.createElement('img');
-    img.src = `/static/media/${moleculeData.name}.png`; // Corregido: Usar la imagen PNG local
+    img.src = `/static/media/${moleculeData.name}.png`;
     img.alt = moleculeData.name;
     const nameLabel = document.createElement('p');
     nameLabel.textContent = moleculeData.name;
@@ -113,9 +112,9 @@ export function clearCombination(currentSelectedMolecule) {
 export async function combineMolecules() {
     if (!molSlot1 || !molSlot2) return;
     
-    updateButtonState('', true); // Inicia carrusel y loader
-    setMoleculeCardsDisabled(true); // Deshabilitar tarjetas
-    showViewerLoaders("Combinando moléculas..."); // Mostrar loaders en visores
+    updateButtonState('', true);
+    setMoleculeCardsDisabled(true);
+    showViewerLoaders("Combinando moléculas...");
 
     try {
         const selectedModelName = document.getElementById('model-select').value;
@@ -145,12 +144,11 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
         const result = await combinationModel.generateContent(prompt);
         const rawResponse = (await result.response).text();
         
-        // La respuesta de la API puede venir con "```json" y "```", los quitamos para un parseo seguro.
         const jsonString = rawResponse.replace(/```(json)?/g, '').trim();
         const responseObject = JSON.parse(jsonString);
         const combinedSmiles = responseObject.combinedSmiles;
 
-        // Validaciones múltiples del SMILES generado
+        // Validaciones mltiples del SMILES generado
         if (!combinedSmiles || typeof combinedSmiles !== 'string') {
             console.error("La IA no generó un SMILES válido en el JSON:", rawResponse);
             throw new Error('La IA no generó un SMILES válido.');
@@ -161,7 +159,7 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
             throw new Error('El SMILES generado es inválido o demasiado complejo.');
         }
         
-        // Verificar que no sea una simple concatenación de las moléculas originales
+        // Verificar que no sea una concatenacion de las moleulas originales
         if (combinedSmiles === molSlot1.smiles + molSlot2.smiles || 
             combinedSmiles === molSlot2.smiles + molSlot1.smiles) {
             console.error("La IA concatenó las moléculas en lugar de combinarlas:", combinedSmiles);
@@ -177,9 +175,8 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
     } catch (error) {
         console.error('Error durante la combinación de moléculas:', error);
         
-        // Limpiar completamente la UI
         hideCombinationResult();
-        showViewerLoaders(""); // Limpiar loaders de visualización
+        showViewerLoaders("");
         
         let errorMessage = 'Error de Combinación';
         if (error.message && error.message.includes('503')) {
@@ -189,9 +186,8 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
         }
         
         updateButtonState(errorMessage, false, false);
-        setMoleculeCardsDisabled(false); // Rehabilitar tarjetas en caso de error
+        setMoleculeCardsDisabled(false);
         
-        // Mostrar mensaje de error más detallado
         showCombinationResult(`
             <div style="color: #d32f2f; background-color: #ffebee; padding: 20px; border-radius: 8px; text-align: center;">
                 <h4>❌ Error en la Combinación</h4>
@@ -208,7 +204,7 @@ Asegúrate de que el valor de "combinedSmiles" sea únicamente la cadena SMILES 
         
         setTimeout(() => {
             updateButtonState('Limpiar Combinación', false, false);
-        }, 5000); // Dar más tiempo para leer el error detallado
+        }, 5000);
     }
 }
 
@@ -236,7 +232,6 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
         const result = await combinationModel.generateContent(prompt);
         const rawResponse = (await result.response).text();
 
-        // La respuesta de la API puede venir con "```json" y "```", los quitamos.
         const jsonString = rawResponse.replace(/```(json)?/g, '').trim();
         const analysisObject = JSON.parse(jsonString);
 
@@ -259,7 +254,7 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
 
         showCombinationResult(analysisHtml);
         updateButtonState('Combinación Exitosa', false, false);
-        setMoleculeCardsDisabled(false); // Rehabilitar tarjetas al finalizar con éxito
+        setMoleculeCardsDisabled(false);
 
     } catch (error) {
         console.error('Error al analizar la molécula combinada:', error);
@@ -269,7 +264,7 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
             errorMessage = 'IA Sobrecargada';
         }
         updateButtonState(errorMessage, false, false);
-        setMoleculeCardsDisabled(false); // Rehabilitar tarjetas en caso de error
+        setMoleculeCardsDisabled(false);
     }
 }
 
@@ -277,7 +272,7 @@ export async function handleSuggestionClick(newSmiles) {
     try {
         console.log('Intentando procesar SMILES:', newSmiles);
         
-        // Validación básica del SMILES antes de enviarlo al servidor
+        // Validar el SMILES antes de enviarlo al server
         if (!newSmiles || newSmiles.length > 500 || newSmiles.includes(' ')) {
             throw new Error('SMILES inválido o demasiado complejo');
         }
@@ -298,12 +293,10 @@ export async function handleSuggestionClick(newSmiles) {
         console.error('Error applying suggestion:', error);
         console.error('SMILES problemático:', newSmiles);
         
-        // Limpiar loaders
         showViewerLoaders("");
         updateButtonState('Error SMILES', false, false);
         setMoleculeCardsDisabled(false);
         
-        // Mostrar un mensaje de error más amigable al usuario
         const resultSection = document.getElementById('combination-result-section');
         resultSection.innerHTML = `
             <h3>❌ Error al Procesar Molécula</h3>
@@ -334,6 +327,6 @@ export async function handleSuggestionClick(newSmiles) {
             updateButtonState('Limpiar Combinación', false, false);
         }, 3000);
         
-        throw error; // Re-lanzar para que el error se propague correctamente
+        throw error;
     }
 }
