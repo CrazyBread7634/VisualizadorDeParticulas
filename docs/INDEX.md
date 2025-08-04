@@ -100,8 +100,10 @@ Esta es la documentación completa para **Quimática - Orgánica**, una aplicaci
 
 ### Guardado y Persistencia
 - **Guardar Compuestos**: [Guía de Uso - Guardado](USAGE_GUIDE.md#guardado-y-gestión-de-compuestos)
+- **Eliminar Compuestos**: [Guía de Uso - Eliminación](USAGE_GUIDE.md#eliminando-compuestos-guardados)
 - **Firebase**: [Referencia API - Firebase](API_REFERENCE.md#apis-firebase-javascript)
-- **Gestión**: [Componentes - Compuestos Guardados](COMPONENTS.md#5-sección-de-compuestos-guardados-saved-compounds-section)
+- **Gestión Completa**: [Componentes - Compuestos Guardados](COMPONENTS.md#6-sección-de-compuestos-guardados-saved-compounds-section)
+- **Popup Confirmación**: [Componentes - Popup Eliminación](COMPONENTS.md#5-popup-de-confirmación-de-eliminación-delete-confirmation-popup)
 
 ### SMILES y Formatos
 - **Renderizado**: [Referencia API - Render SMILES](API_REFERENCE.md#3-renderizar-smiles-personalizado)
@@ -164,13 +166,16 @@ combination.js # Combinación molecular
 | Combinación IA | ✅ | ✅ | ✅ |
 | Sugerencias IA | ✅ | ✅ | ✅ |
 | **Guardado Firebase** | ✅ | ✅ | ✅ |
-| **Gestión Compuestos** | ✅ | ✅ | ✅ |
+| **🗑️ Eliminación Compuestos** | ✅ | ✅ | ✅ |
+| **⚠️ Popup Confirmación** | ✅ | ❌ | ✅ |
+| **📱 Estados Vacíos** | ✅ | ❌ | ✅ |
+| **🎨 Iconografía Flaticon** | ✅ | ❌ | ✅ |
 | **Validaciones SMILES** | ✅ | ✅ | ❌ |
 | Exportación 3D | ✅ | ❌ | ✅ |
 | SMILES Custom | ✅ | ✅ | ❌ |
 | Drag & Drop | ✅ | ❌ | ✅ |
 
-**Leyenda**: ✅ Documentado | ❌ No documentado | **Negrita** = Nuevas funcionalidades
+**Leyenda**: ✅ Documentado | ❌ No documentado | **Negrita** = Funcionalidades recientes | 🎯 = Nuevas en esta actualización
 
 ---
 
@@ -271,17 +276,21 @@ combination.js # Combinación molecular
 ### Cobertura
 - **APIs Backend**: 100% documentadas
 - **APIs Frontend**: 100% documentadas
-- **APIs Firebase**: 100% documentadas (nuevo)
+- **APIs Firebase**: 100% documentadas
+- **🗑️ Sistema Eliminación**: 100% documentado (nuevo)
+- **⚠️ Popups Confirmación**: 100% documentados (nuevo)
 - **Componentes UI**: 100% documentados
-- **Casos de Uso**: 90% cubiertos
-- **Validaciones**: 100% documentadas (nuevo)
+- **Casos de Uso**: 95% cubiertos
+- **Validaciones**: 100% documentadas
 
-### Métricas
+### Métricas de Esta Actualización
 - **Páginas totales**: 4 documentos principales
-- **Ejemplos de código**: 75+ snippets
-- **Nuevas funcionalidades**: 6 agregadas
-- **Capturas de pantalla**: Pendientes
-- **Videos tutoriales**: Pendientes
+- **Ejemplos de código**: 85+ snippets (+10 nuevos)
+- **Nuevas funcionalidades**: 10 agregadas (+4 en esta actualización)
+- **Flujos de trabajo**: 4 diagramas Mermaid actualizados
+- **Problemas resueltos**: 5 nuevos casos documentados
+- **Mejores prácticas**: 2 nuevas secciones
+- **Términos glosario**: 6 nuevos conceptos
 
 ---
 

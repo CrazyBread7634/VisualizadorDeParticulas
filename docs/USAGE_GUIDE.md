@@ -170,13 +170,46 @@ La aplicación permite guardar compuestos generados mediante combinaciones de IA
 ##### Visualizar Compuestos Disponibles
 1. En la sección **"Compuestos Guardados"** (parte inferior de la página)
 2. Verás tarjetas verdes con los nombres de tus compuestos
-3. Si no tienes compuestos guardados, aparecerá "No hay compuestos guardados"
+3. Cada tarjeta tiene un botón **"Cargar"** y un ícono de **papelera** (visible al pasar el mouse)
+4. Si no tienes compuestos guardados, aparecerá un estado vacío con ícono y mensaje informativo
 
 ##### Cargar un Compuesto Específico
 1. Busca el compuesto deseado en las tarjetas verdes
 2. Haz clic en el botón **"Cargar"** de la tarjeta
 3. El compuesto se cargará automáticamente en ambos visores (2D y 3D)
 4. Aparecerá el análisis guardado en la sección de resultados
+
+#### Eliminando Compuestos Guardados
+
+##### Proceso de Eliminación Segura
+1. **Identificar el compuesto**: Localiza la tarjeta del compuesto que deseas eliminar
+2. **Activar eliminación**: Pasa el mouse sobre la tarjeta para ver el ícono de papelera 🗑️
+3. **Iniciar eliminación**: Haz clic en el ícono de papelera (esquina superior derecha)
+4. **Confirmar acción**: Se abrirá un popup de confirmación con el nombre del compuesto
+5. **Ejecutar eliminación**: Haz clic en **"Eliminar"** para confirmar, o **"Cancelar"** para abortar
+
+##### Características de Seguridad
+- **Confirmación requerida**: Siempre aparece un popup antes de eliminar
+- **Nombre visible**: El popup muestra exactamente qué compuesto se eliminará
+- **Advertencia clara**: "Esta acción no se puede deshacer"
+- **Estados de loading**: El botón muestra "Eliminando..." durante el proceso
+- **Manejo de errores**: Si falla, se muestra un mensaje de error y se puede reintentar
+
+##### Popup de Confirmación
+```
+┌─────────────────────────────────────┐
+│  ⚠️   Confirmar Eliminación         │
+├─────────────────────────────────────┤
+│ ¿Estás seguro de que deseas         │
+│ eliminar este compuesto?            │
+│                                     │
+│ "Nombre del Compuesto Específico"  │
+│                                     │
+│ Esta acción no se puede deshacer.   │
+├─────────────────────────────────────┤
+│    [Cancelar]    [🗑️ Eliminar]     │
+└─────────────────────────────────────┘
+```
 
 ### Ejemplo Práctico: Flujo Completo de Guardado
 
@@ -188,6 +221,22 @@ La aplicación permite guardar compuestos generados mediante combinaciones de IA
 5. Confirma que aparezca "Guardado"
 6. Desplázate hacia abajo para ver tu compuesto en "Compuestos Guardados"
 7. Prueba cargar el compuesto haciendo clic en "Cargar"
+```
+
+### Ejemplo Práctico: Flujo Completo de Eliminación
+
+```
+1. Ve a la sección "Compuestos Guardados"
+2. Localiza el compuesto que deseas eliminar
+3. Pasa el mouse sobre la tarjeta verde
+4. Observa cómo aparece el ícono de papelera 🗑️ en la esquina superior derecha
+5. Haz clic en el ícono de papelera
+6. Lee el popup de confirmación que aparece
+7. Verifica que el nombre del compuesto sea correcto
+8. Haz clic en "Eliminar" para confirmar (o "Cancelar" para abortar)
+9. Observa el estado "Eliminando..." en el botón
+10. Confirma que el compuesto desaparece de la lista
+11. Si no hay más compuestos, verás el estado vacío con ícono informativo
 ```
 
 ---
@@ -412,6 +461,47 @@ Isobutano: CC(C)C
 4. Verifica que el SMILES no contenga espacios o caracteres inválidos
 ```
 
+### Problema: Error al eliminar compuesto
+**Causa**: Problemas de conectividad o permisos de Firebase
+**Solución**:
+```
+1. Verifica tu conexión a internet
+2. Refresca la página e intenta nuevamente
+3. Asegúrate de que el compuesto existe (no fue eliminado por otra sesión)
+4. Si persiste, cierra y abre el navegador
+5. En caso extremo, usa modo incógnito
+```
+
+### Problema: Botón de eliminar no aparece
+**Causa**: Problemas de CSS o JavaScript
+**Solución**:
+```
+1. Asegúrate de pasar el mouse sobre la tarjeta completamente
+2. Espera un momento para que la animación CSS se active
+3. Verifica que no haya errores de JavaScript en la consola (F12)
+4. Refresca la página si los íconos no cargan
+```
+
+### Problema: Popup de confirmación no se cierra
+**Causa**: Problema con event listeners o JavaScript
+**Solución**:
+```
+1. Haz clic en "Cancelar" o "Eliminar" dentro del popup
+2. Intenta hacer clic fuera del popup para cerrarlo
+3. Presiona la tecla Escape
+4. Si no responde, refresca la página (F5)
+```
+
+### Problema: Compuesto eliminado sigue apareciendo
+**Causa**: Problemas de sincronización con Firebase o cache
+**Solución**:
+```
+1. Refresca la página manualmente
+2. Espera unos segundos para que se sincronice con Firebase
+3. Verifica tu conexión a internet
+4. Borra el cache del navegador para este sitio
+```
+
 ---
 
 ## Consejos y Mejores Prácticas
@@ -464,6 +554,19 @@ Isobutano: CC(C)C
 3. Revisa periódicamente tus compuestos guardados
 4. Usa compuestos guardados como base para nuevas modificaciones
 5. Exporta análisis importantes antes de experimentar
+6. Ten cuidado al eliminar: la acción es permanente
+7. Verifica siempre el nombre antes de confirmar eliminación
+8. Mantén un número razonable de compuestos para mejor organización
+```
+
+#### Para Eliminación Segura de Compuestos
+```
+1. Lee siempre el popup de confirmación completamente
+2. Verifica que el nombre del compuesto sea correcto
+3. Considera exportar el análisis antes de eliminar
+4. No elimines compuestos que podrías necesitar más tarde
+5. Ten en cuenta que la eliminación es inmediata y permanente
+6. Si dudas, cancela y reconsidéalo más tarde
 ```
 
 ### Personalización Avanzada
@@ -645,6 +748,16 @@ async function exportCompounds() {
 **CompoundData**: Estructura de datos que incluye nombre, SMILES, análisis y fecha de creación
 
 **Validación SMILES**: Proceso de verificación de formato y complejidad de notaciones químicas
+
+**Popup de Confirmación**: Ventana modal que requiere confirmación del usuario antes de ejecutar acciones destructivas
+
+**Estado Vacío**: Interfaz que se muestra cuando no hay elementos para mostrar, con íconos y mensajes informativos
+
+**Eliminación Permanente**: Proceso de borrado definitivo de datos que no se puede deshacer
+
+**Event Delegation**: Patrón de JavaScript que maneja eventos en el contenedor padre en lugar de elementos individuales
+
+**Flaticon (fi)**: Biblioteca de íconos utilizada en la interfaz para elementos visuales como papelera, advertencias, etc.
 
 ---
 

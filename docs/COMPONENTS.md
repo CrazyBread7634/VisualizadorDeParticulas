@@ -506,7 +506,155 @@ function toggle3DLabels() {
 
 ---
 
-### 5. Sección de Compuestos Guardados (`#saved-compounds-section`)
+### 5. Popup de Confirmación de Eliminación (`#delete-confirmation-popup`)
+
+#### Descripción
+Popup modal que solicita confirmación del usuario antes de eliminar un compuesto guardado, implementando un patrón UX seguro para acciones destructivas.
+
+#### Estructura HTML
+```html
+<div id="delete-confirmation-popup" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-header">
+            <i class="fi fi-br-exclamation-triangle"></i>
+            <h3>Confirmar Eliminación</h3>
+        </div>
+        <div class="popup-body">
+            <p>¿Estás seguro de que deseas eliminar este compuesto?</p>
+            <p class="compound-name-to-delete"></p>
+            <p class="warning-text">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="popup-footer">
+            <button id="cancel-delete-btn" class="control-btn-secondary">Cancelar</button>
+            <button id="confirm-delete-btn" class="control-btn delete-btn">
+                <i class="fi fi-br-trash"></i>
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+```
+
+#### Propiedades CSS
+```css
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.popup-content {
+    background-color: white;
+    border-radius: var(--border-radius-large);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 450px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: popupSlideIn 0.3s ease-out;
+}
+
+@keyframes popupSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+.delete-btn:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+```
+
+#### Funcionalidades
+
+##### Mostrar Confirmación
+```javascript
+function showDeleteConfirmation(compound) {
+    compoundToDelete = compound;
+    const popup = document.getElementById('delete-confirmation-popup');
+    const compoundNameElement = popup.querySelector('.compound-name-to-delete');
+    compoundNameElement.textContent = `"${compound.name}"`;
+    popup.style.display = 'flex';
+}
+```
+
+##### Ocultar Confirmación
+```javascript
+function hideDeleteConfirmation() {
+    const popup = document.getElementById('delete-confirmation-popup');
+    popup.style.display = 'none';
+    compoundToDelete = null;
+}
+```
+
+##### Manejo de Estados de Botón
+```javascript
+// Estados del botón de confirmación
+const confirmButton = document.getElementById('confirm-delete-btn');
+
+// Estado inicial
+confirmButton.innerHTML = '<i class="fi fi-br-trash"></i> Eliminar';
+
+// Estado de carga
+confirmButton.disabled = true;
+confirmButton.innerHTML = '<i class="fi fi-br-loading"></i> Eliminando...';
+
+// Estado de éxito (se oculta el popup)
+confirmButton.disabled = false;
+confirmButton.innerHTML = '<i class="fi fi-br-trash"></i> Eliminar';
+```
+
+#### Estados Visuales
+
+| Estado | Clase CSS | Descripción |
+|--------|-----------|-------------|
+| Oculto | `popup-overlay` | Display: none (default) |
+| Visible | `popup-overlay` | Display: flex |
+| Animando | `popup-content` | Animación popupSlideIn |
+| Procesando | `.delete-btn:disabled` | Botón deshabilitado durante eliminación |
+
+#### Características UX
+
+##### Confirmación Segura
+- **Doble confirmación**: Click en tarjeta + popup
+- **Nombre visible**: Muestra qué compuesto se eliminará
+- **Advertencia clara**: "Esta acción no se puede deshacer"
+- **Fondo bloqueado**: Backdrop blur para enfocar atención
+
+##### Accesibilidad
+- **Escape con clic**: Click fuera del popup para cancelar
+- **Botones claros**: "Cancelar" vs "Eliminar" con iconos distintivos
+- **Estados de loading**: Feedback visual durante procesamiento
+- **Manejo de errores**: Alertas informativas si falla
+
+---
+
+### 6. Sección de Compuestos Guardados (`#saved-compounds-section`)
 
 #### Descripción
 Sección que permite visualizar y cargar compuestos generados previamente y guardados en Firebase Firestore.
@@ -518,6 +666,28 @@ Sección que permite visualizar y cargar compuestos generados previamente y guar
     <div id="saved-compounds-container" class="molecule-card-container">
         <!-- Los compuestos guardados se cargarán aquí -->
     </div>
+</div>
+```
+
+#### Estructura de Tarjeta Mejorada
+```html
+<div class="molecule-card saved-compound-card">
+    <button class="delete-compound-btn" title="Eliminar compuesto">
+        <i class="fi fi-br-trash"></i>
+    </button>
+    <p>Nombre del Compuesto</p>
+    <div class="card-buttons">
+        <button class="control-btn load-btn">Cargar</button>
+    </div>
+</div>
+```
+
+#### Estado Vacío Mejorado
+```html
+<div class="empty-state">
+    <i class="fi fi-br-empty-set"></i>
+    <p>No hay compuestos guardados.</p>
+    <span class="empty-hint">Combina moléculas y guarda los resultados.</span>
 </div>
 ```
 
@@ -553,6 +723,44 @@ Sección que permite visualizar y cargar compuestos generados previamente y guar
     line-height: 1.2;
 }
 
+/* Botón de eliminación en la esquina superior derecha */
+.delete-compound-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(220, 53, 69, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.saved-compound-card:hover .delete-compound-btn {
+    opacity: 1;
+}
+
+.delete-compound-btn:hover {
+    background: rgba(200, 35, 51, 1);
+    transform: scale(1.1);
+}
+
+.delete-compound-btn i {
+    color: white;
+    font-size: 10px;
+}
+
+.card-buttons {
+    display: flex;
+    gap: 5px;
+    margin-top: auto;
+}
+
 .load-btn {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -566,6 +774,35 @@ Sección que permite visualizar y cargar compuestos generados previamente y guar
 
 .load-btn:hover {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* Estado vacío */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 3em;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 1.1em;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.empty-hint {
+    font-size: 0.9em;
+    opacity: 0.7;
+    font-style: italic;
 }
 ```
 
@@ -589,14 +826,19 @@ async function renderSavedCompounds() {
 }
 ```
 
-##### Creación de Tarjetas
+##### Creación de Tarjetas Mejorada
 ```javascript
 function createCompoundCard(compound) {
     const card = document.createElement('div');
     card.className = 'molecule-card saved-compound-card';
     card.innerHTML = `
+        <button class="delete-compound-btn" title="Eliminar compuesto">
+            <i class="fi fi-br-trash"></i>
+        </button>
         <p>${compound.name}</p>
-        <button class="control-btn load-btn">Cargar</button>
+        <div class="card-buttons">
+            <button class="control-btn load-btn">Cargar</button>
+        </div>
     `;
     
     // Event listener para cargar compuesto
@@ -604,7 +846,39 @@ function createCompoundCard(compound) {
         loadSavedCompound(compound);
     });
     
+    // Event listener para eliminar compuesto
+    card.querySelector('.delete-compound-btn').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevenir propagación al contenedor
+        showDeleteConfirmation(compound);
+    });
+    
     return card;
+}
+```
+
+##### Manejo de Estado Vacío
+```javascript
+function renderEmptyState(container) {
+    container.innerHTML = `
+        <div class="empty-state">
+            <i class="fi fi-br-empty-set"></i>
+            <p>No hay compuestos guardados.</p>
+            <span class="empty-hint">Combina moléculas y guarda los resultados.</span>
+        </div>
+    `;
+}
+```
+
+##### Funcionalidad de Eliminación
+```javascript
+function handleCompoundDeletion(compound) {
+    // Mostrar popup de confirmación
+    showDeleteConfirmation(compound);
+    
+    // El flujo continúa en el popup:
+    // 1. Usuario confirma → handleDeleteCompound()
+    // 2. Usuario cancela → hideDeleteConfirmation()
+    // 3. Eliminación exitosa → renderSavedCompounds()
 }
 ```
 
@@ -664,7 +938,7 @@ const firebaseConfig = {
 
 ---
 
-### 6. Menú Contextual (`#context-menu`)
+### 7. Menú Contextual (`#context-menu`)
 
 #### Descripción
 Menú emergente inteligente que proporciona sugerencias de modificaciones moleculares basadas en IA.
@@ -802,7 +1076,7 @@ function makeDraggable(element) {
 
 ---
 
-### 7. Sistema de Carga (`loader-overlay`)
+### 8. Sistema de Carga (`loader-overlay`)
 
 #### Descripción
 Sistema unificado de indicadores de carga para todas las operaciones asíncronas.
@@ -959,12 +1233,20 @@ graph TD
     A[Inicializar aplicación] --> B[renderSavedCompounds]
     B --> C[loadCompounds desde Firebase]
     C --> D{Hay compuestos?}
-    D -->|Sí| E[Crear tarjetas de compuestos]
-    D -->|No| F[Mostrar mensaje vacío]
-    E --> G[Usuario clica Cargar]
-    G --> H[loadSavedCompound]
-    H --> I[Cargar en visores 2D/3D]
-    I --> J[Mostrar análsis guardado]
+    D -->|Sí| E[Crear tarjetas con botones eliminar]
+    D -->|No| F[Mostrar estado vacío con iconos]
+    E --> G{Usuario interactúa}
+    G -->|Clic Cargar| H[loadSavedCompound]
+    G -->|Clic Eliminar| I[showDeleteConfirmation]
+    H --> J[Cargar en visores 2D/3D]
+    J --> K[Mostrar análisis guardado]
+    I --> L[Mostrar popup con confirmación]
+    L --> M{Usuario confirma?}
+    M -->|Sí| N[handleDeleteCompound]
+    M -->|No| O[hideDeleteConfirmation]
+    N --> P[deleteCompound en Firebase]
+    P --> Q[renderSavedCompounds actualizada]
+    O --> E
 ```
 
 ### 4. Flujo de Sugerencias IA
@@ -995,6 +1277,9 @@ const MoleculeEvents = {
     SUGGESTION_APPLIED: 'suggestion:applied',
     COMPOUND_SAVED: 'compound:saved',
     COMPOUND_LOADED: 'compound:loaded',
+    COMPOUND_DELETED: 'compound:deleted',
+    DELETE_CONFIRMATION_SHOWN: 'delete:confirmation_shown',
+    DELETE_CONFIRMATION_CANCELLED: 'delete:confirmation_cancelled',
     FIREBASE_ERROR: 'firebase:error'
 };
 
@@ -1013,6 +1298,20 @@ function emitCompoundSaved(compoundData) {
     document.dispatchEvent(event);
 }
 
+function emitCompoundDeleted(compoundId) {
+    const event = new CustomEvent(MoleculeEvents.COMPOUND_DELETED, {
+        detail: { compoundId }
+    });
+    document.dispatchEvent(event);
+}
+
+function emitDeleteConfirmationShown(compoundData) {
+    const event = new CustomEvent(MoleculeEvents.DELETE_CONFIRMATION_SHOWN, {
+        detail: compoundData
+    });
+    document.dispatchEvent(event);
+}
+
 // Escucha de eventos
 document.addEventListener(MoleculeEvents.LOADED, (event) => {
     console.log('Molécula cargada:', event.detail);
@@ -1022,6 +1321,17 @@ document.addEventListener(MoleculeEvents.LOADED, (event) => {
 document.addEventListener(MoleculeEvents.COMPOUND_SAVED, (event) => {
     console.log('Compuesto guardado:', event.detail);
     renderSavedCompounds(); // Actualizar lista
+});
+
+document.addEventListener(MoleculeEvents.COMPOUND_DELETED, (event) => {
+    console.log('Compuesto eliminado:', event.detail.compoundId);
+    renderSavedCompounds(); // Actualizar lista
+    showSuccessMessage('Compuesto eliminado exitosamente');
+});
+
+document.addEventListener(MoleculeEvents.DELETE_CONFIRMATION_SHOWN, (event) => {
+    console.log('Confirmación de eliminación mostrada para:', event.detail.name);
+    trackUserInteraction('delete_confirmation_shown');
 });
 ```
 

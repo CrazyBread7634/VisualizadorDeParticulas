@@ -401,6 +401,60 @@ compounds.forEach(compound => {
 });
 ```
 
+#### 3. deleteCompound()
+
+```javascript
+async function deleteCompound(compoundId: string): Promise<boolean>
+```
+
+**Descripción**: Elimina un compuesto específico de Firebase Firestore usando su ID de documento.
+
+**Parámetros**:
+- `compoundId` (string, requerido): ID del documento del compuesto en Firestore
+
+**Retorna**:
+- `boolean`: `true` si la eliminación fue exitosa
+
+**Errores**:
+- Lanza excepción si ocurre un error durante la eliminación
+- Los errores se registran en consola para debugging
+
+**Ejemplo**:
+```javascript
+import { deleteCompound } from './firebase/db.js';
+
+try {
+    await deleteCompound('doc_id_123');
+    console.log('Compuesto eliminado exitosamente');
+    // Actualizar UI para reflejar el cambio
+} catch (error) {
+    console.error('Error al eliminar:', error);
+    alert('Error al eliminar el compuesto. Intenta de nuevo.');
+}
+```
+
+**Uso en la Aplicación**:
+```javascript
+// Ejemplo de implementación con confirmación
+async function handleDeleteCompound(compound) {
+    const confirmed = confirm(`¿Eliminar "${compound.name}"?`);
+    if (confirmed) {
+        try {
+            await deleteCompound(compound.id);
+            refreshCompoundsList(); // Recargar lista
+        } catch (error) {
+            handleDeleteError(error);
+        }
+    }
+}
+```
+
+**Consideraciones de Seguridad**:
+- La eliminación es **permanente** y no se puede deshacer
+- Recomendado implementar confirmación del usuario
+- No hay soft delete - el documento se elimina completamente de Firestore
+- Los límites de Firebase aplican (operaciones por segundo, etc.)
+
 ---
 
 ## APIs Frontend (JavaScript)
