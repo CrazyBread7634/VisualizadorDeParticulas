@@ -10,6 +10,7 @@ import {
     populateMoleculeCards, 
     updateCardSelection, 
     updateButtonState,
+    updateButtonStateForAPI,
     initContextMenu 
 } from './ui.js';
 import { setupDragAndDrop, clearCombination, combineMolecules } from './combination.js';
@@ -213,8 +214,16 @@ function init() {
 
     loadMolecule(currentSelectedMolecule);
     updateCardSelection(currentSelectedMolecule);
-    updateButtonState('Limpiar Combinación', false, true);
+    // No mostrar el botón de combinación hasta que se arrastre una molécula
+    updateButtonState('', false, true);
     renderSavedCompounds();
+    
+    // Inicializar el estado del botón de API después de un breve delay para asegurar que configManager esté listo
+    setTimeout(() => {
+        if (window.updateButtonStateForAPI) {
+            window.updateButtonStateForAPI();
+        }
+    }, 100);
 }
 
 document.addEventListener('DOMContentLoaded', init);

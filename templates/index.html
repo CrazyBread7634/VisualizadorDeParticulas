@@ -6,6 +6,7 @@
     <title>Quimática - Orgánica</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-bold-rounded/css/uicons-bold-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
@@ -30,6 +31,7 @@
     
     <script src="{{ url_for('static', filename='js/firebase/config.js') }}" type="module"></script>
     <script src="{{ url_for('static', filename='js/firebase/db.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/config.js') }}" type="module"></script>
     <script src="{{ url_for('static', filename='js/viewer.js') }}" type="module"></script>
     <script src="{{ url_for('static', filename='js/ui.js') }}" type="module"></script>
     <script src="{{ url_for('static', filename='js/combination.js') }}" type="module"></script>
@@ -53,7 +55,12 @@
             </div>
             <button id="context-menu-close" class="control-btn-secondary">Cerrar</button>
         </div>
-        <h1>Quimática - Orgánica</h1>
+        <div class="header-section">
+            <h1>Quimática - Orgánica</h1>
+            <button id="config-btn" class="config-btn" title="Configuración">
+                <i class="fi fi-sr-settings"></i>
+            </button>
+        </div>
         
         <div id="molecule-bank" class="top-section">
             <h3>Banco de Moléculas</h3>
@@ -86,6 +93,14 @@
                     <lord-icon class="loader-small" src="https://cdn.lordicon.com/flabvqvs.json" trigger="loop" state="loop-snake-alt" style="width:25px;height:25px" colors="primary:#ffffff"></lord-icon>
                     <span class="btn-text carrusel-text">Limpiar Combinación</span>
                  </button>
+            </div>
+            <div id="api-config-notice" class="api-config-notice" style="display: none;">
+                <i class="fi fi-br-info"></i>
+                <p>Para usar la funcionalidad de combinación de moléculas, necesitas configurar tu clave API de Gemini en la configuración.</p>
+                <button id="open-config-btn" class="control-btn-secondary">
+                    <i class="fi fi-br-setting"></i>
+                    Abrir Configuración
+                </button>
             </div>
         </div>
 
@@ -159,6 +174,69 @@
                 <button id="confirm-delete-btn" class="control-btn delete-btn">
                     <i class="fi fi-br-trash"></i>
                     Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventana de Configuración -->
+    <div id="config-modal" class="config-modal">
+        <div class="config-content">
+            <div class="config-header">
+                <h3><i class="fi fi-br-setting"></i> Configuración</h3>
+                <button id="config-close-btn" class="config-close-btn">
+                    <i class="fi fi-br-cross-small"></i>
+                </button>
+            </div>
+            <div class="config-body">
+                <div class="config-section">
+                    <h4>Configuración de Gemini API</h4>
+                    <p class="config-description">
+                        Configura tu clave API de Google Gemini para utilizar la funcionalidad de IA.
+                    </p>
+                    <div class="input-group">
+                        <label for="gemini-api-key">Clave API de Gemini:</label>
+                        <div class="api-key-input-container">
+                            <input 
+                                type="password" 
+                                id="gemini-api-key" 
+                                placeholder="Ingresa tu clave API de Gemini"
+                                class="api-key-input"
+                            >
+                            <button id="toggle-api-key" class="toggle-api-key-btn" title="Mostrar/Ocultar">
+                                <i class="fi fi-sr-eye"></i>
+                            </button>
+                        </div>
+                        <small class="input-help">
+                            Puedes obtener tu clave API en 
+                            <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
+                                Google AI Studio
+                            </a>
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h4>Configuración de Modelo</h4>
+                    <div class="input-group">
+                        <label for="default-model">Modelo por defecto:</label>
+                        <select id="default-model" class="config-select">
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="config-footer">
+                <button id="config-save-btn" class="control-btn">
+                    <i class="fi fi-br-check"></i>
+                    Guardar Configuración
+                </button>
+                <button id="config-reset-btn" class="control-btn-secondary">
+                    <i class="fi fi-br-refresh"></i>
+                    Restablecer
                 </button>
             </div>
         </div>

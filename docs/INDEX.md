@@ -167,9 +167,9 @@ combination.js # Combinación molecular
 | Sugerencias IA | ✅ | ✅ | ✅ |
 | **Guardado Firebase** | ✅ | ✅ | ✅ |
 | **🗑️ Eliminación Compuestos** | ✅ | ✅ | ✅ |
-| **⚠️ Popup Confirmación** | ✅ | ❌ | ✅ |
-| **📱 Estados Vacíos** | ✅ | ❌ | ✅ |
-| **🎨 Iconografía Flaticon** | ✅ | ❌ | ✅ |
+| **⚠️ Popup Confirmación** | ✅ | ✅ | ✅ |
+| **📱 Estados Vacíos** | ✅ | ✅ | ✅ |
+| **🎨 Iconografía Flaticon** | ✅ | ✅ | ✅ |
 | **Validaciones SMILES** | ✅ | ✅ | ❌ |
 | Exportación 3D | ✅ | ❌ | ✅ |
 | SMILES Custom | ✅ | ✅ | ❌ |
@@ -279,18 +279,29 @@ combination.js # Combinación molecular
 - **APIs Firebase**: 100% documentadas
 - **🗑️ Sistema Eliminación**: 100% documentado (nuevo)
 - **⚠️ Popups Confirmación**: 100% documentados (nuevo)
+- **📱 Estados Vacíos**: 100% documentados (nuevo)
+- **🎨 Iconografía Flaticon**: 100% documentada (nueva)
+- **🔒 Validaciones Robustas**: 100% documentadas (mejoradas)
 - **Componentes UI**: 100% documentados
-- **Casos de Uso**: 95% cubiertos
+- **Casos de Uso**: 98% cubiertos
 - **Validaciones**: 100% documentadas
 
 ### Métricas de Esta Actualización
 - **Páginas totales**: 4 documentos principales
-- **Ejemplos de código**: 85+ snippets (+10 nuevos)
-- **Nuevas funcionalidades**: 10 agregadas (+4 en esta actualización)
+- **Ejemplos de código**: 85+ snippets (+15 nuevos)
+- **Nuevas funcionalidades**: 10 agregadas (+6 en esta actualización)
 - **Flujos de trabajo**: 4 diagramas Mermaid actualizados
 - **Problemas resueltos**: 5 nuevos casos documentados
 - **Mejores prácticas**: 2 nuevas secciones
 - **Términos glosario**: 6 nuevos conceptos
+
+### Funcionalidades Recientemente Mejoradas
+- **🗑️ Sistema de Eliminación**: Popup de confirmación obligatorio
+- **⚠️ Estados de Loading**: Feedback visual durante operaciones críticas
+- **📱 Estados Vacíos**: Interfaz informativa cuando no hay compuestos
+- **🎨 Iconografía Flaticon**: Sistema de íconos profesional y consistente
+- **🔒 Validaciones Robustas**: Verificaciones mejoradas en frontend y backend
+- **📊 Logging Avanzado**: Información detallada para debugging
 
 ---
 

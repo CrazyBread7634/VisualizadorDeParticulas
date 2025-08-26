@@ -188,12 +188,24 @@ La aplicación permite guardar compuestos generados mediante combinaciones de IA
 4. **Confirmar acción**: Se abrirá un popup de confirmación con el nombre del compuesto
 5. **Ejecutar eliminación**: Haz clic en **"Eliminar"** para confirmar, o **"Cancelar"** para abortar
 
+**Nuevas Características de Seguridad**:
+- **Confirmación obligatoria**: Siempre aparece el popup antes de eliminar
+- **Estados de loading**: El botón muestra "Eliminando..." durante el proceso
+- **Recuperación automática**: Si falla, se puede reintentar inmediatamente
+- **Feedback visual**: Confirmación inmediata de éxito o error
+
 ##### Características de Seguridad
 - **Confirmación requerida**: Siempre aparece un popup antes de eliminar
 - **Nombre visible**: El popup muestra exactamente qué compuesto se eliminará
 - **Advertencia clara**: "Esta acción no se puede deshacer"
 - **Estados de loading**: El botón muestra "Eliminando..." durante el proceso
 - **Manejo de errores**: Si falla, se muestra un mensaje de error y se puede reintentar
+
+**Mejoras Recientes Implementadas**:
+- **Validación robusta**: Verificación de permisos y existencia del compuesto
+- **Recuperación automática**: Restauración del estado en caso de fallo
+- **Logging detallado**: Registro de todas las operaciones para auditoría
+- **Interfaz responsiva**: Adaptación automática a diferentes dispositivos
 
 ##### Popup de Confirmación
 ```
@@ -472,6 +484,11 @@ Isobutano: CC(C)C
 5. En caso extremo, usa modo incógnito
 ```
 
+**Nuevas Funciones de Recuperación**:
+- **Reintento automático**: El sistema permite reintentar inmediatamente
+- **Estados visuales**: Feedback claro del estado de la operación
+- **Logs detallados**: Información de debugging en consola del navegador
+
 ### Problema: Botón de eliminar no aparece
 **Causa**: Problemas de CSS o JavaScript
 **Solución**:
@@ -560,6 +577,12 @@ Isobutano: CC(C)C
 ```
 
 #### Para Eliminación Segura de Compuestos
+
+**Nuevas Funcionalidades de Seguridad**:
+- **Confirmación obligatoria**: El sistema siempre requiere confirmación
+- **Estados de loading**: Feedback visual durante el proceso
+- **Recuperación automática**: Restauración del estado en caso de fallo
+- **Logging completo**: Registro de todas las operaciones para auditoría
 ```
 1. Lee siempre el popup de confirmación completamente
 2. Verifica que el nombre del compuesto sea correcto
@@ -758,6 +781,14 @@ async function exportCompounds() {
 **Event Delegation**: Patrón de JavaScript que maneja eventos en el contenedor padre en lugar de elementos individuales
 
 **Flaticon (fi)**: Biblioteca de íconos utilizada en la interfaz para elementos visuales como papelera, advertencias, etc.
+
+**Popup de Confirmación**: Ventana modal que requiere confirmación del usuario antes de ejecutar acciones destructivas
+
+**Estado Vacío**: Interfaz que se muestra cuando no hay elementos para mostrar, con íconos y mensajes informativos
+
+**Eliminación Permanente**: Proceso de borrado definitivo de datos que no se puede deshacer
+
+**Validación Robusta**: Sistema de verificación que previene errores antes de ejecutar operaciones críticas
 
 ---
 

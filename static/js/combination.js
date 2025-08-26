@@ -1,4 +1,4 @@
-import { getGenerativeModel } from './api.js';
+import { getGenerativeModel, isAPIAvailable } from './api.js';
 import { loadMolecule, loadMoleculeFromData, showViewerLoaders } from './viewer.js';
 import { 
     updateButtonState, 
@@ -71,11 +71,7 @@ async function handleMoleculeDrop(event) {
         }
         updateSlotUI(targetSlotElement, moleculeData);
         
-        if (molSlot1 && molSlot2) {
-            updateButtonState('Combinar Moléculas', false);
-        } else {
-            updateButtonState('Limpiar Combinación', false, false); 
-        }
+        updateButtonState(getButtonText(), false, false);
 
     } catch (error) {
         console.error('Error al procesar datos de la molécula:', error);
@@ -96,6 +92,16 @@ function updateSlotUI(slotElement, moleculeData) {
     slotElement.appendChild(nameLabel);
 }
 
+// Función auxiliar para determinar el texto correcto del botón
+function getButtonText() {
+    if (molSlot1 && molSlot2) {
+        return 'Combinar Moléculas';
+    } else {
+        const hasMolecules = molSlot1Element.classList.contains('occupied') || molSlot2Element.classList.contains('occupied');
+        return hasMolecules ? 'Limpiar Lienzo' : '';
+    }
+}
+
 export function clearCombination(currentSelectedMolecule) {
     molSlot1 = null;
     molSlot2 = null;
@@ -103,10 +109,13 @@ export function clearCombination(currentSelectedMolecule) {
         slot.innerHTML = `<p>Molécula ${slot.id.slice(-1)}</p>`;
         slot.classList.remove('occupied');
     });
-    updateButtonState('Limpiar Combinación', false, true);
+    
     document.querySelector('h1').textContent = 'Quimica Orgánica';
     hideCombinationResult();
     loadMolecule(currentSelectedMolecule);
+    
+    // Actualizar el estado del botón después de limpiar los slots
+    updateButtonState(getButtonText(), false, true);
 }
 
 export async function combineMolecules() {
@@ -208,6 +217,11 @@ async function analyzeCombinedMolecule(smiles) {
     showCombinationLoading();
     
     try {
+        // Verificar si la API está disponible
+        if (!isAPIAvailable()) {
+            throw new Error('API de Gemini no configurada. Por favor, configura tu clave API en la configuración.');
+        }
+
         const selectedModelName = document.getElementById('model-select').value;
         const combinationModel = getGenerativeModel(selectedModelName);
 
@@ -251,6 +265,11 @@ No incluyas explicaciones adicionales fuera del formato JSON. Redacta cada campo
         showCombinationResult(analysisHtml);
         updateButtonState('Combinación Exitosa', false, false);
         setMoleculeCardsDisabled(false);
+        
+        // Cambiar automáticamente el texto del botón después de 5 segundos
+        setTimeout(() => {
+            updateButtonState('Limpiar Combinación', false, false);
+        }, 5000);
 
     } catch (error) {
         showCombinationResult('<p>Ocurrió un error al generar el análisis.</p>');

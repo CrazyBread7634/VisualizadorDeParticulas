@@ -165,6 +165,12 @@ curl "http://localhost:5000/api/molecule/fulvestrant?show_atoms=false&show_bonds
 }
 ```
 
+**Validaciones Mejoradas**:
+- **Longitud SMILES**: Máximo 500 caracteres (validación estricta)
+- **Número de átomos**: Máximo 150 átomos por molécula
+- **Formato**: No espacios, caracteres válidos únicamente
+- **Logging detallado**: Información de debugging en consola del servidor
+
 **Ejemplos**:
 
 ```bash
@@ -857,6 +863,8 @@ async function handleSuggestionClick(suggestion: object): Promise<void>
 - Mensajes de error detallados para el usuario
 - Información técnica expandible
 - Sugerencias específicas para resolver problemas
+- **Validación robusta**: Verificación de formato y longitud antes del envío
+- **Feedback visual**: Estados de loading y manejo de errores en tiempo real
 
 ---
 
@@ -945,6 +953,8 @@ interface ErrorResponse {
 - **Timeout**: 30 segundos para procesamiento 3D
 - **Memoria**: Limitado por disponibilidad del sistema
 - **Validaciones SMILES**: No espacios, caracteres válidos únicamente
+- **Logging Avanzado**: Información detallada de debugging para desarrollo
+- **Fallback 3D**: Múltiples estrategias de generación de conformaciones
 
 ### Frontend
 - **Modelos IA**: Sujeto a cuotas de Google AI

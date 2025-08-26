@@ -33,6 +33,8 @@ Una aplicación web interactiva moderna para la visualización, combinación y a
 - **CRUD completo**: Crear, leer y eliminar compuestos guardados
 - **Confirmación segura**: Popups de confirmación para acciones destructivas
 - **Estados informativos**: Interfaz vacía con iconografía guía
+- **🗑️ Eliminación segura**: Sistema de confirmación obligatorio con estados de loading
+- **📱 Estados vacíos mejorados**: Interfaz informativa con iconografía Flaticon
 
 ### 🎨 **Interfaz de Usuario Moderna**
 - **Drag & Drop**: Arrastrar moléculas para combinar
@@ -264,6 +266,10 @@ svg_image, bonds = smiles_to_svg("CCO", show_atoms=True)
 - ✅ Drag & Drop interactivo
 - ✅ Validaciones SMILES robustas
 - ✅ Documentación completa (100%)
+- ✅ 🗑️ Sistema de eliminación seguro con confirmación obligatoria
+- ✅ 📱 Estados vacíos informativos con iconografía profesional
+- ✅ 🔒 Validaciones robustas en frontend y backend
+- ✅ 📊 Logging avanzado para debugging y auditoría
 
 ### 🔄 En Desarrollo
 - 🔄 Autenticación de usuarios
@@ -306,6 +312,8 @@ svg_image, bonds = smiles_to_svg("CCO", show_atoms=True)
 - ⚠️ Popups de confirmación
 - 🎨 Estados vacíos informativos
 - 📚 Documentación completa
+- 🔒 Validaciones robustas mejoradas
+- 📊 Logging avanzado implementado
 
 ---
 

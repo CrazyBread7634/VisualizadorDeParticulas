@@ -1,4 +1,4 @@
-import { suggestionModel } from './api.js';
+import { getSuggestionModel, isAPIAvailable } from './api.js';
 import { getCurrentSmiles } from './viewer.js';
 import { handleSuggestionClick } from './combination.js';
 
@@ -100,6 +100,11 @@ async function showContextMenu(event, title) {
     isFetchingSuggestions = true;
 
     try {
+        // Verificar si la API está disponible
+        if (!isAPIAvailable()) {
+            throw new Error('API de Gemini no configurada. Por favor, configura tu clave API en la configuración.');
+        }
+
         const currentSmiles = getCurrentSmiles();
         const contextType = currentContext.type === 'atom' ? `el átomo con índice ${currentContext.id}` : `el enlace con índice ${currentContext.id}`;
         
@@ -124,6 +129,7 @@ Ejemplo de formato de respuesta:
 Responde SÓLO con el array JSON.
 `;
 
+        const suggestionModel = getSuggestionModel();
         const result = await suggestionModel.generateContent(prompt);
         const rawResponse = (await result.response).text();
 
@@ -173,6 +179,12 @@ async function handleCustomPrompt() {
     updateButtonState('Procesando IA...', true);
 
     try {
+        // Verificar si la API está disponible
+        if (!isAPIAvailable()) {
+            throw new Error('API de Gemini no configurada. Por favor, configura tu clave API en la configuración.');
+        }
+
+        const suggestionModel = getSuggestionModel();
         const result = await suggestionModel.generateContent(prompt);
         const rawResponse = (await result.response).text();
         const newSmiles = rawResponse.replace(/```(smiles|json|html)?/g, '').replace(/```/g, '').trim().split('\n').pop().trim();
@@ -287,13 +299,56 @@ export function updateButtonState(text, isLoading, disabled = false) {
     clearCombinationBtn.classList.toggle('loading', isLoading);
     clearCombinationBtn.disabled = isLoading || disabled;
 
-
     if (isLoading) {
         startFeedbackCarousel(btnText);
+        clearCombinationBtn.style.display = 'flex';
     } else {
         stopFeedbackCarousel();
         btnText.textContent = text;
+        
+        // Ocultar el botón si no hay texto
+        if (!text || text.trim() === '') {
+            clearCombinationBtn.style.display = 'none';
+        } else {
+            clearCombinationBtn.style.display = 'flex';
+        }
     }
+}
+
+// Función para actualizar el estado del botón basado en la configuración de la API
+export function updateButtonStateForAPI() {
+    if (typeof window !== 'undefined' && window.configManager) {
+        const isConfigured = window.configManager.isConfigComplete();
+        const clearCombinationBtn = document.getElementById('clear-combination-btn');
+        const apiConfigNotice = document.getElementById('api-config-notice');
+        
+        if (clearCombinationBtn) {
+            if (!isConfigured) {
+                clearCombinationBtn.disabled = true;
+                clearCombinationBtn.title = 'Configura la API de Gemini para usar esta función';
+                clearCombinationBtn.style.display = 'none';
+            } else {
+                // Solo mostrar el botón si tiene texto y está habilitado
+                const hasText = clearCombinationBtn.querySelector('.btn-text')?.textContent?.trim() !== '';
+                clearCombinationBtn.disabled = false;
+                clearCombinationBtn.title = '';
+                clearCombinationBtn.style.display = hasText ? 'flex' : 'none';
+            }
+        }
+        
+        if (apiConfigNotice) {
+            if (!isConfigured) {
+                apiConfigNotice.style.display = 'flex';
+            } else {
+                apiConfigNotice.style.display = 'none';
+            }
+        }
+    }
+}
+
+// Hacer la función disponible globalmente
+if (typeof window !== 'undefined') {
+    window.updateButtonStateForAPI = updateButtonStateForAPI;
 }
 
 

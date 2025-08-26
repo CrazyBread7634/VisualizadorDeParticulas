@@ -509,7 +509,7 @@ function toggle3DLabels() {
 ### 5. Popup de Confirmación de Eliminación (`#delete-confirmation-popup`)
 
 #### Descripción
-Popup modal que solicita confirmación del usuario antes de eliminar un compuesto guardado, implementando un patrón UX seguro para acciones destructivas.
+Popup modal que solicita confirmación del usuario antes de eliminar un compuesto guardado, implementando un patrón UX seguro para acciones destructivas. **Nueva funcionalidad** que mejora la seguridad del sistema de gestión de compuestos.
 
 #### Estructura HTML
 ```html
@@ -657,7 +657,7 @@ confirmButton.innerHTML = '<i class="fi fi-br-trash"></i> Eliminar';
 ### 6. Sección de Compuestos Guardados (`#saved-compounds-section`)
 
 #### Descripción
-Sección que permite visualizar y cargar compuestos generados previamente y guardados en Firebase Firestore.
+Sección que permite visualizar y cargar compuestos generados previamente y guardados en Firebase Firestore. **Mejorada recientemente** con sistema de eliminación seguro y estados vacíos informativos.
 
 #### Estructura HTML
 ```html
@@ -690,6 +690,12 @@ Sección que permite visualizar y cargar compuestos generados previamente y guar
     <span class="empty-hint">Combina moléculas y guarda los resultados.</span>
 </div>
 ```
+
+**Características de la Nueva Implementación**:
+- **Iconografía Flaticon**: Íconos profesionales y consistentes
+- **Mensajes informativos**: Guías claras para el usuario
+- **Estados visuales**: Transiciones suaves y animaciones
+- **Responsive design**: Adaptable a diferentes tamaños de pantalla
 
 #### Propiedades CSS
 ```css
@@ -881,6 +887,12 @@ function handleCompoundDeletion(compound) {
     // 3. Eliminación exitosa → renderSavedCompounds()
 }
 ```
+
+**Mejoras Recientes**:
+- **Confirmación obligatoria**: Siempre requiere confirmación del usuario
+- **Estados de loading**: Botón deshabilitado durante eliminación
+- **Manejo de errores**: Recuperación automática en caso de fallo
+- **Feedback visual**: Confirmación inmediata de éxito
 
 ##### Carga de Compuesto Individual
 ```javascript
